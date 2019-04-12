@@ -13,7 +13,7 @@ if not DATABASES['default']['NAME'].endswith("db_test.sqlite3"):
     print("Cerity yourself that you're using the test database")
     exit()
 
-HOST = "http://localhost:8001"
+HOST = "http://localhost:80"
 
 class NoDbTestRunner(DiscoverRunner):
    """ A test runner to test without database creation/deletion """
@@ -28,9 +28,40 @@ ADMIN_AUTH = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX25hbWUiOiJhZG
 DEFAULT_USER_AUTH = "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6NDQsInVzZXJfbmFtZSI6InVzZXJfdGVzdCIsImF2YXRhciI6IiJ9.WkRj5ZO8crRHOmO8Z8-fT9SOzZ8wRIRJxtGijCkSFvU"
 INVALID_AUTH = "Bearer eyJ0eXAiOiJKV1QiLCJhbGcOiJIUzI1NiJ9.eyJpZCI6NDQsInVzZXJfbmFtZSI6InVzZXJfdGVzdCIsImF2YXRhciI6IiJ9.WkRj5ZO8crRHOmO8Z8-fT9SOzZ8wRIRJxtGijCkSFvU"
 
+class KanbanTest(SimpleTestCase):
+    def setUp(self):
+        pass
+
+    def aux_create_user(self, user_name, password, is_admin=False):
+        user_data = {
+            "user_name": user_name,
+            "password": password
+        }
+        if is_admin:
+            user_data.update({"role": "admin"})
+        data = json.dumps(user_data)
+        return requests.post(HOST + "/scrum-list/user-list/register/", data, headers={"Authorization": ADMIN_AUTH})
+
+    def aux_get_user_authorization(self, user_name, password):
+        response = requests.post(HOST + "/scrum-list/user-list/login/", json.dumps({"user_name": user_name, "password": password}) )
+        return "Bearer " + response.headers["x-access-token"]
+
+    def aux_find_user_by_user_name(self, user_name):
+        url = HOST + "/scrum-list/user-list/filter/user_name/eq/" + user_name
+        response = requests.get(url, headers={"Authorization": ADMIN_AUTH})
+        return (json.loads( response.text ))[0]
+
+    def aux_remove_last_slash(self, url_as_str):
+        url = url_as_str.strip()
+
+        if url_as_str is None or url_as_str == "":
+            return url_as_str
+
+        url = url[:-1] if url[-1] == '*' else url
+        return url[:-1] if url.endswith('/') else url
 
 #python manage.py test scrum.tests.ScrumUserDetailTest --testrunner=scrum.tests.NoDbTestRunner
-class ScrumUserDetailTest(SimpleTestCase):
+class ScrumUserDetailTest(KanbanTest):
     def setUp(self):
         self.uri_sctum_user_list = HOST + "/scrum-list/user-list/"
 
@@ -38,9 +69,6 @@ class ScrumUserDetailTest(SimpleTestCase):
         self.user_for_edit_auth = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NDUsInVzZXJfbmFtZSI6InVzZXJfZWRpdF90ZXN0IiwiYXZhdGFyIjoiIn0.s__SQf1OxKcHxOCDdW7LwX0a2rEW-v2zwgU9QtjfdsU"
 
         self.uri_admin_for_edit = HOST + "/scrum-list/user-list/46"
-
-        self.uri_user_for_delete = HOST + "/scrum-list/user-list/filter/user_name/eq/user_delete_test"
-        self.uri_admin_for_delete = HOST + "/scrum-list/user-list/filter/user_name/eq/admin_delete_test"
 
     def aux_get_edit_user_setted_to_admin(self):
         return json.dumps(
@@ -131,96 +159,126 @@ class ScrumUserDetailTest(SimpleTestCase):
         self.assertEquals(clear_db.status_code, 204)
 
 
-    def aux_restore_default_user_to_delete(self):
-        return requests.post(HOST + "/scrum-list/user-list/register/",
-            json.dumps({
-                "user_name": "user_delete_test",
-                "password": "user_delete_test",
-                "description": "User for deletion tests",
-                "role": "user"
-            })
-                             )
-
-    def aux_restore_admin_to_delete(self):
-        return requests.post(HOST + "/scrum-list/user-list/register/",
-            json.dumps({
-                "user_name": "admin_delete_test",
-                "password": "admin_delete_test",
-                "role": "admin",
-                "description": "Admin for deletion tests"
-            }),
-            headers={"Authorization": ADMIN_AUTH}
-        )
-
-    def aux_get_default_user_to_delete_dict(self):
-        #return dict( json.loads( requests.get("http://localhost:8001/scrum-list/user-list/filter/user_name/eq/user_delete_test").text ) )[0]
-        response = requests.get(self.uri_user_for_delete, headers={"Authorization": ADMIN_AUTH})
-        return (json.loads( response.text ))[0]
-
-    def aux_get_admin_user_to_delete_dict(self):
-        #return dict( json.loads( requests.get("http://localhost:8001/scrum-list/user-list/filter/user_name/eq/admin_delete_test").text ) )[0]
-        response = requests.get(self.uri_admin_for_delete, headers={"Authorization": ADMIN_AUTH})
-        return (json.loads( response.text ))[0]
-
-    def aux_get_default_user_authorization(self):
-        response = requests.post("http://localhost:8001/scrum-list/user-list/login/", json.dumps({"user_name": "user_delete_test", "password": "user_delete_test"}) )
-        return "Bearer " + response.headers["x-access-token"]
-
-    def aux_get_admin_user_authorization(self):
-        response = requests.post("http://localhost:8001/scrum-list/user-list/login/", json.dumps({"user_name": "admin_delete_test", "password": "admin_delete_test"}) )
-        return "Bearer " + response.headers["x-access-token"]
-
     # delete default user
     def test_delete_default_user_without_token(self):
-        default_user_dict = self.aux_get_default_user_to_delete_dict()
+        default_user_name = "default_user_delete_test"
+        post_response = self.aux_create_user(default_user_name, default_user_name, is_admin=False)
+        self.assertIn(post_response.status_code, [201, 400])# response 400, the user can awready exists
+
+        default_user_dict = self.aux_find_user_by_user_name(default_user_name)
         response = requests.delete(self.uri_sctum_user_list + str(default_user_dict["id"]))
         self.assertEquals(response.status_code, 401)
 
     def test_delete_default_user_with_invalid_token(self):
-        default_user_dict = self.aux_get_default_user_to_delete_dict()
+        default_user_name = "default_user_delete_test"
+        post_response = self.aux_create_user(default_user_name, default_user_name, is_admin=False)
+        self.assertIn(post_response.status_code, [201, 400])# response 400, the user can awready exists
+
+        default_user_dict = self.aux_find_user_by_user_name(default_user_name)
         response = requests.delete(self.uri_sctum_user_list + str(default_user_dict["id"]), headers={"Authorization": INVALID_AUTH})
         self.assertEquals(response.status_code, 401)
 
     def test_delete_default_user_with_default_user_token_self_account(self):
-        default_user_dict = self.aux_get_default_user_to_delete_dict()
-        default_user_owner_auth = self.aux_get_default_user_authorization()
+        default_user_name = "default_user_delete_test"
+        post_response = self.aux_create_user(default_user_name, default_user_name, is_admin=False)
+        self.assertIn(post_response.status_code, [201, 400])# response 400, the user can awready exists
 
+        default_user_dict = self.aux_find_user_by_user_name(default_user_name)
+        default_user_owner_auth = self.aux_get_user_authorization(default_user_name, default_user_name)
         response = requests.delete(self.uri_sctum_user_list + str(default_user_dict["id"]), headers={"Authorization": default_user_owner_auth})
         self.assertEquals(response.status_code, 401)
 
     def test_delete_default_user_with_default_user_token_another_user_account(self):
-        default_user_dict = self.aux_get_default_user_to_delete_dict()
-        response = requests.delete(self.uri_sctum_user_list + str(default_user_dict["id"]), headers={"Authorization": DEFAULT_USER_AUTH})
+        default_user_name = "default_user_delete_test"
+        post_response = self.aux_create_user(default_user_name, default_user_name, is_admin=False)
+        self.assertIn(post_response.status_code, [201, 400])
+
+        alternative_user_name = "alternative_user_delete_test"
+        post_response = self.aux_create_user(alternative_user_name, alternative_user_name, is_admin=False)
+        self.assertIn(post_response.status_code, [201, 400])
+
+        default_user_auth = self.aux_get_user_authorization(default_user_name, default_user_name)
+        alternative_user_dict = self.aux_find_user_by_user_name(alternative_user_name)
+        response = requests.delete(self.uri_sctum_user_list + str(alternative_user_dict["id"]), headers={"Authorization": default_user_auth})
         self.assertEquals(response.status_code, 401)
 
     def test_delete_default_user_with_admin_token(self):
-        default_user_dict = self.aux_get_default_user_to_delete_dict()
+        default_user_name = "default_user_delete_test"
+        post_response = self.aux_create_user(default_user_name, default_user_name, is_admin=False)
+        self.assertIn(post_response.status_code, [201, 400])
+
+        default_user_dict = self.aux_find_user_by_user_name(default_user_name)
         response = requests.delete(self.uri_sctum_user_list + str(default_user_dict["id"]), headers={"Authorization": ADMIN_AUTH})
         self.assertEquals(response.status_code, 204)
 
-        restore_response = self.aux_restore_default_user_to_delete()
+        # restoring default user
+        restore_response = self.aux_create_user(default_user_name, default_user_name, is_admin=False)
         self.assertEquals(restore_response.status_code, 201)
+
 
     # delete admin user
     def test_delete_admin_user_without_token(self):
-        admin_user_dict = self.aux_get_admin_user_to_delete_dict()
+        # creating admin user
+        admin_user_name = "admin_user_delete_test"
+        post_response = self.aux_create_user(admin_user_name, admin_user_name, is_admin=True)
+        self.assertIn(post_response.status_code, [201, 400])
+
+        admin_user_dict = self.aux_find_user_by_user_name(admin_user_name)
         response = requests.delete(self.uri_sctum_user_list + str(admin_user_dict["id"]))
         self.assertEquals(response.status_code, 401)
 
     def test_delete_admin_user_with_invalid_token(self):
-        admin_user_dict = self.aux_get_admin_user_to_delete_dict()
+        # creating admin user
+        admin_user_name = "admin_user_delete_test"
+        post_response = self.aux_create_user(admin_user_name, admin_user_name, is_admin=True)
+        self.assertIn(post_response.status_code, [201, 400])
+
+        admin_user_dict = self.aux_find_user_by_user_name(admin_user_name)
         response = requests.delete(self.uri_sctum_user_list + str(admin_user_dict["id"]), headers={"Authorization": INVALID_AUTH})
         self.assertEquals(response.status_code, 401)
 
     def test_delete_admin_user_with_default_user_token(self):
-        admin_user_dict = self.aux_get_admin_user_to_delete_dict()
-        response = requests.delete(self.uri_sctum_user_list + str(admin_user_dict["id"]), headers={"Authorization": DEFAULT_USER_AUTH})
+        # creating admin user
+        admin_user_name = "admin_user_delete_test"
+        post_response = self.aux_create_user(admin_user_name, admin_user_name, is_admin=True)
+        self.assertIn(post_response.status_code, [201, 400])
+
+        # creating default user
+        default_user_name = "default_user_delete_test"
+        post_response = self.aux_create_user(default_user_name, default_user_name, is_admin=False)
+        self.assertIn(post_response.status_code, [201, 400])
+        default_user_auth = self.aux_get_user_authorization(default_user_name, default_user_name)
+
+        admin_user_dict = self.aux_find_user_by_user_name(admin_user_name)
+        response = requests.delete(self.uri_sctum_user_list + str(admin_user_dict["id"]), headers={"Authorization": default_user_auth})
         self.assertEquals(response.status_code, 401)
 
-    def test_delete_admin_user_with_admin_user_token(self):
-        admin_user_dict = self.aux_get_admin_user_to_delete_dict()
-        response = requests.delete(self.uri_sctum_user_list + str(admin_user_dict["id"]), headers={"Authorization": ADMIN_AUTH})
+    def test_delete_admin_user_with_admin_user_token_another_account(self):
+        # creating admin user
+        admin_user_name = "admin_user_delete_test"
+        post_response = self.aux_create_user(admin_user_name, admin_user_name, is_admin=True)
+        self.assertIn(post_response.status_code, [201, 400])
+
+        # creating alternative admin user
+        alt_admin_user_name = "alternative_admin_user_delete_test"
+        post_response = self.aux_create_user(alt_admin_user_name, alt_admin_user_name, is_admin=True)
+        self.assertIn(post_response.status_code, [201, 400])
+
+        alt_admin_user_dict = self.aux_find_user_by_user_name(alt_admin_user_name)
+        admin_user_auth = self.aux_get_user_authorization(admin_user_name, admin_user_name)
+        response = requests.delete(self.uri_sctum_user_list + str(alt_admin_user_dict["id"]), headers={"Authorization": admin_user_auth})
         self.assertEquals(response.status_code, 401)
+
+    def test_delete_admin_user_with_admin_user_token_self_account(self):
+        # creating admin user
+        admin_user_name = "admin_user_delete_test"
+        post_response = self.aux_create_user(admin_user_name, admin_user_name, is_admin=True)
+        self.assertIn(post_response.status_code, [201, 400])
+
+        admin_user_dict = self.aux_find_user_by_user_name(admin_user_name)
+        admin_user_auth = self.aux_get_user_authorization(admin_user_name, admin_user_name)
+        response = requests.delete(self.uri_sctum_user_list + str(admin_user_dict["id"]), headers={"Authorization": admin_user_auth})
+        self.assertEquals(response.status_code, 401) # admin users can't be deleted (nor self account)
 
 #python manage.py test scrum.tests.ScrumUserRegisterTest --testrunner=scrum.tests.NoDbTestRunner
 class ScrumUserRegisterTest(SimpleTestCase):
@@ -370,7 +428,7 @@ class TaskListTest(SimpleTestCase):
         return json.dumps(
             {
                 "name": "task_" + str(datetime.datetime.now().microsecond),
-                "responsible": "http://localhost:8001/scrum-list/user-list/44/" # admin user id = 44
+                "responsible": HOST + "/scrum-list/user-list/44/" # admin user id = 44
             }
         )
 
@@ -378,7 +436,7 @@ class TaskListTest(SimpleTestCase):
         return json.dumps(
             {
                 "name": "task_" + str(datetime.datetime.now().microsecond),
-                "responsible": "http://localhost:8001/scrum-list/user-list/31/" # admin user id = 31
+                "responsible": HOST + "/scrum-list/user-list/31/" # admin user id = 31
             }
         )
 
@@ -386,7 +444,7 @@ class TaskListTest(SimpleTestCase):
         return json.dumps(
             {
                 "name": "task_" + str(datetime.datetime.now().microsecond),
-                "responsible": "http://localhost:8001/scrum-list/user-list/20/"
+                "responsible": HOST + "/scrum-list/user-list/20/"
             }
         )
 
@@ -515,7 +573,7 @@ class TaskListTest(SimpleTestCase):
         self.assertEquals(response.status_code, 400)
 
 #python manage.py test scrum.tests.TaskDetailTest --testrunner=scrum.tests.NoDbTestRunner
-class TaskDetailTest(SimpleTestCase):
+class TaskDetailTest(KanbanTest):
     def setUp(self):
         self.uri_task_list = HOST + "/scrum-list/task-list/"
         self.uri_user_register = HOST + "/scrum-list/user-list/register/"
@@ -533,20 +591,32 @@ class TaskDetailTest(SimpleTestCase):
 
         self.uri_admin_for_test_task = HOST + "/scrum-list/user-list/filter/user_name/eq/admin_user_to_test_tasks"
         self.uri_admin_task = HOST + "/scrum-list/task-list/filter/name/eq/admin_user_task"
-        self.aux_create_admin_user_to_test_tasks()
-        self.aux_create_task_for_admin_user()
+        #self.aux_create_admin_user_to_test_tasks()
+        #self.aux_create_task_for_admin_user()
         self.uri_alternative_admin_for_test_task = HOST + "/scrum-list/user-list/filter/user_name/eq/alternative_admin_user_to_test_tasks"
         self.uri_alternative_admin_task = HOST + "/scrum-list/task-list/filter/name/eq/alternative_admin_user_task"
-        self.aux_create_alternative_admin_user_to_test_tasks()
-        self.aux_create_task_for_alternative_admin_user()
+        #self.aux_create_alternative_admin_user_to_test_tasks()
+        #self.aux_create_task_for_alternative_admin_user()
         self.uri_user_for_test_task = HOST + "/scrum-list/user-list/filter/user_name/eq/default_user_to_test_tasks"
         self.uri_user_task = HOST + "/scrum-list/task-list/filter/name/eq/default_user_task"
-        self.aux_create_default_user_to_test_tasks()
-        self.aux_create_task_for_default_user()
+        #self.aux_create_default_user_to_test_tasks()
+        #self.aux_create_task_for_default_user()
         self.uri_alternative_user_for_test_task = HOST + "/scrum-list/user-list/filter/user_name/eq/alternative_user_to_test_tasks"
         self.uri_alternative_user_task = HOST + "/scrum-list/task-list/filter/name/eq/alternative_user_task"
-        self.aux_create_alternative_default_user_to_test_tasks()
-        self.aux_create_task_for_alternative_default_user()
+        #self.aux_create_alternative_default_user_to_test_tasks()
+        #self.aux_create_task_for_alternative_default_user()
+
+    def aux_create_task_for_user(self, task_name, responsible_id, responsible_auth):
+        data = {
+            "name": task_name,
+            "responsible": HOST + "/scrum-list/user-list/" + str(responsible_id)
+        }
+        return requests.post(self.uri_task_list, json.dumps(data),
+                             headers={"Authorization": responsible_auth, "Content-Type": "application/json"})
+
+    def aux_find_task_by_name(self, task_name):
+        response = requests.get(HOST + "/scrum-list/task-list/filter/name/eq/" + task_name, headers={"Authorization": ADMIN_AUTH})
+        return json.loads( response.text )[0]
 
     '''
     {
@@ -566,6 +636,7 @@ class TaskDetailTest(SimpleTestCase):
         "to_string": "tarefa_editada_1"
     }
     '''
+    '''
     def aux_get_edit_task_setted_to_admin(self):
         return json.dumps({"id": 908, "name": "default_user_task_edit", "responsible": self.uri_admin})
 
@@ -573,136 +644,272 @@ class TaskDetailTest(SimpleTestCase):
         return json.dumps({"id": 909, "name": "admin_task", "responsible": self.uri_default_user})
 
     def aux_get_edit_task_setted_to_default_user_alternative(self):
-        '''
+        """
         Setting task from default user 44 to default user 45
-        '''
+        """
         return json.dumps({"id": 910, "name": "default_user_task_edit2", "responsible": self.uri_default_user})
 
     def aux_restore_default_user_task(self):
         return requests.put(
             self.uri_user_task_for_edit,
-            json.dumps({"id": 908, "name": "default_user_task_edit", "responsible": "http://localhost:8001/scrum-list/user-list/45"}),
+            json.dumps({"id": 908, "name": "default_user_task_edit", "responsible": HOST + "/scrum-list/user-list/45"}),
             headers={"Authorization": ADMIN_AUTH}
         )
 
     def aux_restore_admin_task(self):
         return requests.put(
             self.uri_admin_task_for_edit,
-            json.dumps({"id": 909, "name": "admin_task", "responsible": "http://localhost:8001/scrum-list/user-list/46"}),
+            json.dumps({"id": 909, "name": "admin_task", "responsible": HOST + "/scrum-list/user-list/46"}),
             headers={"Authorization": ADMIN_AUTH}
         )
+    '''
 
 
-    def test_set_task_to_default_user_without_token(self):
-        admin_task_setted_to_default_user = self.aux_get_edit_task_setted_to_default_user()
-        response = requests.put(self.uri_admin_task_for_edit, admin_task_setted_to_default_user)
+    def aux_alter_task_responsible(self, task_dict, new_responsible):
+        responsible_url = "/".join( self.aux_remove_last_slash(task_dict["responsible"]).split("/")[:-1] )
+        new_responsible_url = responsible_url + "/" + str(new_responsible["id"])
+        task_dict["responsible"] = new_responsible_url
+        return task_dict
+
+
+    def test_set_task_from_default_user_to_admin_without_token(self):
+        # creating default user
+        default_user_name = "default_user_to_alter_task"
+        create_user_response = self.aux_create_user(default_user_name, default_user_name)
+        self.assertIn(create_user_response.status_code, [201, 400])
+
+        # creating task for default user
+        default_task_name = "default_user_task_to_alter"
+        default_user_dict = self.aux_find_user_by_user_name(default_user_name)
+        default_user_auth = self.aux_get_user_authorization(default_user_name, default_user_name)
+        create_task_response = self.aux_create_task_for_user(default_task_name, default_user_dict["id"], default_user_auth)
+        self.assertIn(create_task_response.status_code, [201, 400])
+
+        # creating admin user
+        admin_user_name = "admin_user_to_alter_task"
+        create_admin_response = self.aux_create_user(admin_user_name, admin_user_name, is_admin=True)
+        self.assertIn(create_admin_response.status_code, [201, 400])
+
+        # changing responsible from default user to admin user
+        task_dict = self.aux_find_task_by_name(default_task_name)
+        new_responsible = self.aux_find_user_by_user_name(admin_user_name)
+        updated_task = self.aux_alter_task_responsible(task_dict, new_responsible)
+        response = requests.put(self.uri_task_list + str(task_dict["id"]), json.dumps(updated_task))
         self.assertEquals(response.status_code, 401)
 
-    def test_set_task_to_default_user_with_invalid_token(self):
-        admin_task_setted_to_default_user = self.aux_get_edit_task_setted_to_default_user()
-        response = requests.put(self.uri_admin_task_for_edit, admin_task_setted_to_default_user, headers={"Authorization": INVALID_AUTH})
+    def test_set_task_from_default_user_to_admin_invalid_token(self):
+        # creating default user
+        default_user_name = "default_user_to_alter_task"
+        create_user_response = self.aux_create_user(default_user_name, default_user_name)
+        self.assertIn(create_user_response.status_code, [201, 400])
+
+        # creating task for default user
+        default_task_name = "default_user_task_to_alter"
+        default_user_dict = self.aux_find_user_by_user_name(default_user_name)
+        default_user_auth = self.aux_get_user_authorization(default_user_name, default_user_name)
+        create_task_response = self.aux_create_task_for_user(default_task_name, default_user_dict["id"], default_user_auth)
+        self.assertIn(create_task_response.status_code, [201, 400])
+
+        # creating admin user
+        admin_user_name = "admin_user_to_alter_task"
+        create_admin_response = self.aux_create_user(admin_user_name, admin_user_name, is_admin=True)
+        self.assertIn(create_admin_response.status_code, [201, 400])
+
+        # changing responsible from default user to admin user
+        task_dict = self.aux_find_task_by_name(default_task_name)
+        new_responsible = self.aux_find_user_by_user_name(admin_user_name)
+        updated_task = self.aux_alter_task_responsible(task_dict, new_responsible)
+        response = requests.put(self.uri_task_list + str(task_dict["id"]), json.dumps(updated_task), headers={"Authorization": INVALID_AUTH})
         self.assertEquals(response.status_code, 401)
 
-    def test_set_task_to_default_user_with_default_user_token_self_account(self):
-        admin_task_setted_to_default_user = self.aux_get_edit_task_setted_to_default_user()
-        response = requests.put(self.uri_admin_task_for_edit, admin_task_setted_to_default_user, headers={"Authorization": self.default_user_auth})
+    def test_set_task_from_default_user_to_admin_with_default_user_token(self):
+        # creating default user
+        default_user_name = "default_user_to_alter_task"
+        create_user_response = self.aux_create_user(default_user_name, default_user_name)
+        self.assertIn(create_user_response.status_code, [201, 400])
+
+        # creating task for default user
+        default_task_name = "default_user_task_to_alter"
+        default_user_dict = self.aux_find_user_by_user_name(default_user_name)
+        default_user_auth = self.aux_get_user_authorization(default_user_name, default_user_name)
+        create_task_response = self.aux_create_task_for_user(default_task_name, default_user_dict["id"], default_user_auth)
+        self.assertIn(create_task_response.status_code, [201, 400])
+
+        # creating admin user
+        admin_user_name = "admin_user_to_alter_task"
+        create_admin_response = self.aux_create_user(admin_user_name, admin_user_name, is_admin=True)
+        self.assertIn(create_admin_response.status_code, [201, 400])
+
+        # changing responsible from default user to admin user
+        task_dict = self.aux_find_task_by_name(default_task_name)
+        new_responsible = self.aux_find_user_by_user_name(admin_user_name)
+        updated_task = self.aux_alter_task_responsible(task_dict, new_responsible)
+        response = requests.put(self.uri_task_list + str(task_dict["id"]), json.dumps(updated_task), headers={"Authorization": default_user_auth})
         self.assertEquals(response.status_code, 401)
 
-    def test_set_task_to_default_user_with_default_user_token_another_user_account(self):
-        default_user_task_setted_to_another_default_user = self.aux_get_edit_task_setted_to_default_user_alternative()
-        response = requests.put(self.uri_alternativa_user_task_for_edit, default_user_task_setted_to_another_default_user, headers={"Authorization": self.default_user_auth})
+    def test_set_task_from_default_user_to_another_user_with_default_user_token(self):
+        # creating default user
+        default_user_name = "default_user_to_alter_task"
+        create_user_response = self.aux_create_user(default_user_name, default_user_name)
+        self.assertIn(create_user_response.status_code, [201, 400])
+
+        # creating task for default user
+        default_task_name = "default_user_task_to_alter"
+        default_user_dict = self.aux_find_user_by_user_name(default_user_name)
+        default_user_auth = self.aux_get_user_authorization(default_user_name, default_user_name)
+        create_task_response = self.aux_create_task_for_user(default_task_name, default_user_dict["id"], default_user_auth)
+        self.assertIn(create_task_response.status_code, [201, 400])
+
+        # creating admin user
+        alt_user_name = "alternative_user_to_alter_task"
+        create_alt_user_response = self.aux_create_user(alt_user_name, alt_user_name)
+        self.assertIn(create_alt_user_response.status_code, [201, 400])
+
+        # changing responsible from default user to alternative user
+        task_dict = self.aux_find_task_by_name(default_task_name)
+        new_responsible = self.aux_find_user_by_user_name(alt_user_name)
+        updated_task = self.aux_alter_task_responsible(task_dict, new_responsible)
+        response = requests.put(self.uri_task_list + str(task_dict["id"]), json.dumps(updated_task), headers={"Authorization": default_user_auth})
         self.assertEquals(response.status_code, 401)
 
-    def test_set_task_to_default_user_with_admin_user_token(self):
-        admin_task_setted_to_default_user = self.aux_get_edit_task_setted_to_default_user()
-        response = requests.put(self.uri_admin_task_for_edit, admin_task_setted_to_default_user, headers={"Authorization": ADMIN_AUTH})
+    def test_set_task_from_default_user_to_admin_with_admin_user_token(self):
+        # creating default user
+        default_user_name = "default_user_to_alter_task"
+        create_user_response = self.aux_create_user(default_user_name, default_user_name)
+        self.assertIn(create_user_response.status_code, [201, 400])
+
+        # creating task for default user
+        default_task_name = "default_user_task_to_alter"
+        default_user_dict = self.aux_find_user_by_user_name(default_user_name)
+        default_user_auth = self.aux_get_user_authorization(default_user_name, default_user_name)
+        create_task_response = self.aux_create_task_for_user(default_task_name, default_user_dict["id"], default_user_auth)
+        self.assertIn(create_task_response.status_code, [201, 400])
+
+        # creating admin user
+        admin_user_name = "admin_user_to_alter_task"
+        create_admin_response = self.aux_create_user(admin_user_name, admin_user_name, is_admin=True)
+        self.assertIn(create_admin_response.status_code, [201, 400])
+
+        # changing responsible from default user to admin user
+        task_dict = self.aux_find_task_by_name(default_task_name)
+        new_responsible = self.aux_find_user_by_user_name(admin_user_name)
+        updated_task = self.aux_alter_task_responsible(task_dict, new_responsible)
+        admin_user_auth = self.aux_get_user_authorization(admin_user_name, admin_user_name)
+        response = requests.put(self.uri_task_list + str(task_dict["id"]), json.dumps(updated_task), headers={"Authorization": admin_user_auth})
         self.assertEquals(response.status_code, 204)
 
-        restore_response = self.aux_restore_admin_task()
+        # restoring task responsible
+        old_user_dict = self.aux_find_user_by_user_name(default_user_name)
+        restored_task = self.aux_alter_task_responsible(task_dict, old_user_dict)
+        restore_response = requests.put(self.uri_task_list + str(task_dict["id"]), json.dumps(restored_task), headers={"Authorization": admin_user_auth})
         self.assertEquals(restore_response.status_code, 204)
 
 
-    def test_set_task_to_admin_user_without_token(self):
-        user_task_setted_to_admin = self.aux_get_edit_task_setted_to_admin()
-        response = requests.put(self.uri_user_task_for_edit, user_task_setted_to_admin)
+
+    def test_set_task_from_admin_user_to_default_user_without_token(self):
+        # creating admin user
+        admin_user_name = "admin_user_to_alter_task"
+        create_admin_response = self.aux_create_user(admin_user_name, admin_user_name, is_admin=True)
+        self.assertIn(create_admin_response.status_code, [201, 400])
+
+        # creating default user
+        default_user_name = "default_user_to_alter_task"
+        create_user_response = self.aux_create_user(default_user_name, default_user_name)
+        self.assertIn(create_user_response.status_code, [201, 400])
+
+        # creating task for admin user
+        admin_task_name = "admin_user_task_to_alter"
+        admin_user_dict = self.aux_find_user_by_user_name(admin_user_name)
+        admin_user_auth = self.aux_get_user_authorization(admin_user_name, admin_user_name)
+        create_task_response = self.aux_create_task_for_user(admin_task_name, admin_user_dict["id"], admin_user_auth)
+        self.assertIn(create_task_response.status_code, [201, 400])
+
+        # changing responsible from admin to default user
+        task_dict = self.aux_find_task_by_name(admin_task_name)
+        new_responsible = self.aux_find_user_by_user_name(default_user_name)
+        updated_task = self.aux_alter_task_responsible(task_dict, new_responsible)
+        response = requests.put(self.uri_task_list + str(task_dict["id"]), json.dumps(updated_task))
         self.assertEquals(response.status_code, 401)
 
-    def test_set_task_to_admin_user_with_invalid_token(self):
-        user_task_setted_to_admin = self.aux_get_edit_task_setted_to_admin()
-        response = requests.put(self.uri_user_task_for_edit, user_task_setted_to_admin, headers={"Authorization": INVALID_AUTH})
+    def test_set_task_from_admin_user_to_default_user_with_invalid_token(self):
+        # creating admin user
+        admin_user_name = "admin_user_to_alter_task"
+        create_admin_response = self.aux_create_user(admin_user_name, admin_user_name, is_admin=True)
+        self.assertIn(create_admin_response.status_code, [201, 400])
+
+        # creating default user
+        default_user_name = "default_user_to_alter_task"
+        create_user_response = self.aux_create_user(default_user_name, default_user_name)
+        self.assertIn(create_user_response.status_code, [201, 400])
+
+        # creating task for admin user
+        admin_task_name = "admin_user_task_to_alter"
+        admin_user_dict = self.aux_find_user_by_user_name(admin_user_name)
+        admin_user_auth = self.aux_get_user_authorization(admin_user_name, admin_user_name)
+        create_task_response = self.aux_create_task_for_user(admin_task_name, admin_user_dict["id"], admin_user_auth)
+        self.assertIn(create_task_response.status_code, [201, 400])
+
+        # changing responsible from admin to default user
+        task_dict = self.aux_find_task_by_name(admin_task_name)
+        new_responsible = self.aux_find_user_by_user_name(default_user_name)
+        updated_task = self.aux_alter_task_responsible(task_dict, new_responsible)
+        response = requests.put(self.uri_task_list + str(task_dict["id"]), json.dumps(updated_task), headers={"Authorization": INVALID_AUTH})
         self.assertEquals(response.status_code, 401)
 
-    def test_set_task_to_admin_user_with_default_user_token(self):
-        '''
-        Default user 45 is trying to transfer the task to admin user
-        '''
-        user_task_setted_to_admin = self.aux_get_edit_task_setted_to_admin()
-        response = requests.put(self.uri_user_task_for_edit, user_task_setted_to_admin, headers={"Authorization": self.default_user_auth})
+    def test_set_task_from_admin_user_to_default_user_with_default_user_token(self):
+        # creating admin user
+        admin_user_name = "admin_user_to_alter_task"
+        create_admin_response = self.aux_create_user(admin_user_name, admin_user_name, is_admin=True)
+        self.assertIn(create_admin_response.status_code, [201, 400])
+
+        # creating default user
+        default_user_name = "default_user_to_alter_task"
+        create_user_response = self.aux_create_user(default_user_name, default_user_name)
+        self.assertIn(create_user_response.status_code, [201, 400])
+
+        # creating task for admin user
+        admin_task_name = "admin_user_task_to_alter"
+        admin_user_dict = self.aux_find_user_by_user_name(admin_user_name)
+        admin_user_auth = self.aux_get_user_authorization(admin_user_name, admin_user_name)
+        create_task_response = self.aux_create_task_for_user(admin_task_name, admin_user_dict["id"], admin_user_auth)
+        self.assertIn(create_task_response.status_code, [201, 400])
+
+        # changing responsible from admin to default user
+        task_dict = self.aux_find_task_by_name(admin_task_name)
+        new_responsible = self.aux_find_user_by_user_name(default_user_name)
+        updated_task = self.aux_alter_task_responsible(task_dict, new_responsible)
+        default_user_auth = self.aux_get_user_authorization(default_user_name, default_user_name)
+        response = requests.put(self.uri_task_list + str(task_dict["id"]), json.dumps(updated_task), headers={"Authorization": default_user_auth})
         self.assertEquals(response.status_code, 401)
 
-    def test_set_task_to_admin_user_with_admin_user_token(self):
-        user_task_setted_to_admin = self.aux_get_edit_task_setted_to_admin()
-        response = requests.put(self.uri_user_task_for_edit, user_task_setted_to_admin, headers={"Authorization": ADMIN_AUTH})
-        self.assertEquals(response.status_code, 204)
 
-        restore_response = self.aux_restore_default_user_task()
-        self.assertEquals(restore_response.status_code, 204)
+    def test_set_task_from_admin_user_to_another_admin_user_with_admin_user_token(self):
+        # creating admin user
+        admin_user_name = "admin_user_to_alter_task"
+        create_admin_response = self.aux_create_user(admin_user_name, admin_user_name, is_admin=True)
+        self.assertIn(create_admin_response.status_code, [201, 400])
 
+        # creating alternative admin user
+        alt_admin_name = "alternative_admin_to_alter_task"
+        create_user_response = self.aux_create_user(alt_admin_name, alt_admin_name, is_admin=True)
+        self.assertIn(create_user_response.status_code, [201, 400])
 
-    # delete task tests
-    def aux_create_admin_user_to_test_tasks(self):
-        data = {
-            "user_name": "admin_user_to_test_tasks",
-            "password": "admin_user_to_test_tasks",
-            "role": "admin"
-        }
-        requests.post(self.uri_user_register, json.dumps(data),
-                          headers={
-                              "Authorization": ADMIN_AUTH,
-                              "Content-Type": "application/json"
-                          }
-                      )
+        # creating task for admin user
+        admin_task_name = "admin_user_task_to_alter"
+        admin_user_dict = self.aux_find_user_by_user_name(admin_user_name)
+        admin_user_auth = self.aux_get_user_authorization(admin_user_name, admin_user_name)
+        create_task_response = self.aux_create_task_for_user(admin_task_name, admin_user_dict["id"], admin_user_auth)
+        self.assertIn(create_task_response.status_code, [201, 400])
 
-    def aux_create_alternative_admin_user_to_test_tasks(self):
-        data = {
-            "user_name": "alternative_admin_user_to_test_tasks",
-            "password": "alternative_admin_user_to_test_tasks",
-            "role": "admin"
-        }
-        requests.post(self.uri_user_register, json.dumps(data),
-                          headers={
-                              "Authorization": ADMIN_AUTH,
-                              "Content-Type": "application/json"
-                          }
-                      )
-
-    def aux_create_default_user_to_test_tasks(self):
-        data = {
-            "user_name": "default_user_to_test_tasks",
-            "password": "default_user_to_test_tasks",
-            "role": "user"
-        }
-        requests.post(self.uri_user_register, json.dumps(data),
-                          headers={
-                              "Authorization": ADMIN_AUTH,
-                              "Content-Type": "application/json"
-                          }
-                      )
-
-    def aux_create_alternative_default_user_to_test_tasks(self):
-        data = {
-            "user_name": "alternative_user_to_test_tasks",
-            "password": "alternative_user_to_test_tasks",
-            "role": "user"
-        }
-        requests.post(self.uri_user_register, json.dumps(data),
-                          headers={
-                              "Authorization": ADMIN_AUTH,
-                              "Content-Type": "application/json"
-                          }
-                      )
+        # changing responsible from admin to alternative admin user
+        task_dict = self.aux_find_task_by_name(admin_task_name)
+        new_responsible = self.aux_find_user_by_user_name(alt_admin_name)
+        updated_task = self.aux_alter_task_responsible(task_dict, new_responsible)
+        response = requests.put(self.uri_task_list + str(task_dict["id"]), json.dumps(updated_task), headers={"Authorization": admin_user_auth})
+        self.assertEquals(response.status_code, 401)
 
 
+    '''
     def aux_get_admin_user_to_test_tasks_dict(self):
         response = requests.get(self.uri_admin_for_test_task, headers={"Authorization": ADMIN_AUTH})
         return json.loads( response.text )[0]
@@ -721,61 +928,21 @@ class TaskDetailTest(SimpleTestCase):
 
 
     def aux_get_admin_user_authorization(self):
-        response = requests.post("http://localhost:8001/scrum-list/user-list/login/", json.dumps({"user_name": "admin_user_to_test_tasks", "password": "admin_user_to_test_tasks"}) )
+        response = requests.post(HOST + "/scrum-list/user-list/login/", json.dumps({"user_name": "admin_user_to_test_tasks", "password": "admin_user_to_test_tasks"}) )
         return "Bearer " + response.headers["x-access-token"]
 
     def aux_get_alternative_admin_user_authorization(self):
-        response = requests.post("http://localhost:8001/scrum-list/user-list/login/", json.dumps({"user_name": "alternative_admin_user_to_test_tasks", "password": "alternative_admin_user_to_test_tasks"}) )
+        response = requests.post(HOST + "/scrum-list/user-list/login/", json.dumps({"user_name": "alternative_admin_user_to_test_tasks", "password": "alternative_admin_user_to_test_tasks"}) )
         return "Bearer " + response.headers["x-access-token"]
 
     def aux_get_default_user_authorization(self):
-        response = requests.post("http://localhost:8001/scrum-list/user-list/login/", json.dumps({"user_name": "default_user_to_test_tasks", "password": "default_user_to_test_tasks"}) )
+        response = requests.post(HOST + "/scrum-list/user-list/login/", json.dumps({"user_name": "default_user_to_test_tasks", "password": "default_user_to_test_tasks"}) )
         return "Bearer " + response.headers["x-access-token"]
 
     def aux_get_alternative_default_user_authorization(self):
-        response = requests.post("http://localhost:8001/scrum-list/user-list/login/", json.dumps({"user_name": "alternative_user_to_test_tasks", "password": "alternative_user_to_test_tasks"}) )
+        response = requests.post(HOST + "/scrum-list/user-list/login/", json.dumps({"user_name": "alternative_user_to_test_tasks", "password": "alternative_user_to_test_tasks"}) )
         return "Bearer " + response.headers["x-access-token"]
 
-
-    def aux_create_task_for_admin_user(self):
-        admin_user_id = self.aux_get_admin_user_to_test_tasks_dict()["id"]
-        admin_user_auth = self.aux_get_admin_user_authorization()
-        data = {
-            "name": "admin_user_task",
-            "responsible": "http://localhost:8001/scrum-list/user-list/" + str(admin_user_id)
-        }
-        return requests.post(self.uri_task_list, json.dumps(data),
-                             headers={"Authorization": admin_user_auth, "Content-Type": "application/json"})
-
-    def aux_create_task_for_alternative_admin_user(self):
-        alternative_admin_user_id = self.aux_get_alternative_admin_user_to_test_tasks_dict()["id"]
-        alternative_admin_user_auth = self.aux_get_alternative_admin_user_authorization()
-        data = {
-            "name": "alternative_admin_user_task",
-            "responsible": "http://localhost:8001/scrum-list/user-list/" + str(alternative_admin_user_id)
-        }
-        return requests.post(self.uri_task_list, json.dumps(data),
-                             headers={"Authorization": alternative_admin_user_auth, "Content-Type": "application/json"})
-
-    def aux_create_task_for_default_user(self):
-        default_user_id = self.aux_get_default_user_to_test_tasks_dict()["id"]
-        default_user_auth = self.aux_get_default_user_authorization()
-        data = {
-            "name": "default_user_task",
-            "responsible": "http://localhost:8001/scrum-list/user-list/" + str(default_user_id)
-        }
-        return requests.post(self.uri_task_list, json.dumps(data),
-                             headers={"Authorization": default_user_auth, "Content-Type": "application/json"})
-
-    def aux_create_task_for_alternative_default_user(self):
-        alternative_user_id = self.aux_get_alternative_user_to_test_tasks_dict()["id"]
-        alternative_user_auth = self.aux_get_alternative_default_user_authorization()
-        data = {
-            "name": "alternative_user_task",
-            "responsible": "http://localhost:8001/scrum-list/user-list/" + str(alternative_user_id)
-        }
-        return requests.post(self.uri_task_list, json.dumps(data),
-                             headers={"Authorization": alternative_user_auth, "Content-Type": "application/json"})
 
     def aux_get_task_of_admin_user_dict(self):
         response = requests.get(self.uri_admin_task, headers={"Authorization": ADMIN_AUTH})
@@ -792,78 +959,208 @@ class TaskDetailTest(SimpleTestCase):
     def aux_get_task_of_alternative_default_user_dict(self):
         response = requests.get(self.uri_alternative_user_task, headers={"Authorization": ADMIN_AUTH})
         return (json.loads( response.text ))[0]
+    '''
 
 
     def test_delete_default_user_task_without_token(self):
-        response = requests.delete(self.uri_task_list + str(self.aux_get_task_of_default_user_dict()["id"]))
+        # creating default user
+        default_user_name = "default_user_to_test_task"
+        create_user_response = self.aux_create_user(default_user_name, default_user_name)
+        self.assertIn(create_user_response.status_code, [201, 400])
+
+        # creating task for default user
+        default_task_name = "default_user_task"
+        default_user_dict = self.aux_find_user_by_user_name(default_user_name)
+        default_user_auth = self.aux_get_user_authorization(default_user_name, default_user_name)
+        create_task_response = self.aux_create_task_for_user(default_task_name, default_user_dict["id"], default_user_auth)
+        self.assertIn(create_task_response.status_code, [201, 400])
+
+        task_dict = self.aux_find_task_by_name(default_task_name)
+        response = requests.delete(self.uri_task_list + str(task_dict["id"]))
         self.assertEquals(response.status_code, 401)
 
     def test_delete_default_user_task_with_invalid_token(self):
-        response = requests.delete(self.uri_task_list + str(self.aux_get_task_of_default_user_dict()["id"]),
-                                   headers={"Authorization": INVALID_AUTH})
+        # creating default user
+        default_user_name = "default_user_to_test_task"
+        create_user_response = self.aux_create_user(default_user_name, default_user_name)
+        self.assertIn(create_user_response.status_code, [201, 400])
+
+        # creating task for default user
+        default_task_name = "default_user_task"
+        default_user_dict = self.aux_find_user_by_user_name(default_user_name)
+        default_user_auth = self.aux_get_user_authorization(default_user_name, default_user_name)
+        create_task_response = self.aux_create_task_for_user(default_task_name, default_user_dict["id"], default_user_auth)
+        self.assertIn(create_task_response.status_code, [201, 400])
+
+        task_dict = self.aux_find_task_by_name(default_task_name)
+        response = requests.delete(self.uri_task_list + str(task_dict["id"]), headers={"Authorization": INVALID_AUTH})
         self.assertEquals(response.status_code, 401)
 
     def test_delete_default_user_task_with_default_user_token_self_task(self):
-        response = requests.delete(self.uri_task_list + str(self.aux_get_task_of_default_user_dict()["id"]),
-                                   headers={"Authorization": self.aux_get_default_user_authorization()})
-        self.assertEquals(response.status_code, 204)
+        # creating default user
+        default_user_name = "default_user_to_test_task"
+        create_user_response = self.aux_create_user(default_user_name, default_user_name)
+        self.assertIn(create_user_response.status_code, [201, 400])
 
-        #restoring task
-        restore_response = self.aux_create_task_for_default_user()
-        self.assertEquals(restore_response.status_code, 201)
+        # creating task for default user
+        default_task_name = "default_user_task"
+        default_user_dict = self.aux_find_user_by_user_name(default_user_name)
+        default_user_auth = self.aux_get_user_authorization(default_user_name, default_user_name)
+        create_task_response = self.aux_create_task_for_user(default_task_name, default_user_dict["id"], default_user_auth)
+        self.assertIn(create_task_response.status_code, [201, 400])
+
+        task_dict = self.aux_find_task_by_name(default_task_name)
+        response = requests.delete(self.uri_task_list + str(task_dict["id"]), headers={"Authorization": default_user_auth})
+        self.assertEquals(response.status_code, 204)
 
     def test_delete_default_user_task_with_default_user_token_another_user_task(self):
         '''
         Alternative dafault user trying to delete dafault user task
         '''
-        response = requests.delete(self.uri_task_list + str(self.aux_get_task_of_default_user_dict()["id"]),
-                                   headers={"Authorization": self.aux_get_alternative_default_user_authorization()})
+        # creating default user
+        default_user_name = "default_user_to_test_task"
+        create_user_response = self.aux_create_user(default_user_name, default_user_name)
+        self.assertIn(create_user_response.status_code, [201, 400])
+
+        # creating alternative user
+        alt_default_user_name = "alternative_user_to_test_task"
+        create_alt_user_response = self.aux_create_user(alt_default_user_name, alt_default_user_name)
+        self.assertIn(create_alt_user_response.status_code, [201, 400])
+
+        # creating task for alternative user
+        alt_user_task_name = "alternative_user_task"
+        alt_user_dict = self.aux_find_user_by_user_name(alt_default_user_name)
+        alt_user_auth = self.aux_get_user_authorization(alt_default_user_name, alt_default_user_name)
+        create_task_response = self.aux_create_task_for_user(alt_user_task_name, alt_user_dict["id"], alt_user_auth)
+        self.assertIn(create_task_response.status_code, [201, 400])
+
+        task_dict = self.aux_find_task_by_name(alt_user_task_name)
+        alt_user_auth = self.aux_get_user_authorization(default_user_name, default_user_name)
+        response = requests.delete(self.uri_task_list + str(task_dict["id"]), headers={"Authorization": alt_user_auth})
         self.assertEquals(response.status_code, 401)
 
     def test_delete_default_user_task_with_admin_user_token(self):
         '''
         Admin dafault user trying to delete dafault user task
         '''
-        response = requests.delete(self.uri_task_list + str(self.aux_get_task_of_default_user_dict()["id"]),
-                                   headers={"Authorization": self.aux_get_admin_user_authorization()})
-        self.assertEquals(response.status_code, 204)
+        # creating default user
+        default_user_name = "default_user_to_test_task"
+        create_user_response = self.aux_create_user(default_user_name, default_user_name)
+        self.assertIn(create_user_response.status_code, [201, 400])
 
-        #restoring task
-        restore_response = self.aux_create_task_for_default_user()
-        self.assertEquals(restore_response.status_code, 201)
+        # creating task for default user
+        default_task_name = "default_user_task"
+        default_user_dict = self.aux_find_user_by_user_name(default_user_name)
+        default_user_auth = self.aux_get_user_authorization(default_user_name, default_user_name)
+        create_task_response = self.aux_create_task_for_user(default_task_name, default_user_dict["id"], default_user_auth)
+        self.assertIn(create_task_response.status_code, [201, 400])
+
+        task_dict = self.aux_find_task_by_name(default_task_name)
+        response = requests.delete(self.uri_task_list + str(task_dict["id"]), headers={"Authorization": ADMIN_AUTH})
+        self.assertEquals(response.status_code, 204)
 
 
     def test_delete_admin_user_task_without_token(self):
-        response = requests.delete(self.uri_task_list + str(self.aux_get_task_of_admin_user_dict()["id"]))
+        # creating admin user
+        admin_user_name = "admin_user_to_test_task"
+        create_user_response = self.aux_create_user(admin_user_name, admin_user_name, is_admin=True)
+        self.assertIn(create_user_response.status_code, [201, 400])
+
+        # creating task for default user
+        admin_task_name = "admin_user_task"
+        admin_user_dict = self.aux_find_user_by_user_name(admin_user_name)
+        admin_user_auth = self.aux_get_user_authorization(admin_user_name, admin_user_name)
+        create_task_response = self.aux_create_task_for_user(admin_task_name, admin_user_dict["id"], admin_user_auth)
+        self.assertIn(create_task_response.status_code, [201, 400])
+
+        task_dict = self.aux_find_task_by_name(admin_task_name)
+        response = requests.delete(self.uri_task_list + str(task_dict["id"]))
         self.assertEquals(response.status_code, 401)
 
     def test_delete_admin_user_task_with_invalid_token(self):
-        response = requests.delete(self.uri_task_list + str(self.aux_get_task_of_admin_user_dict()["id"]),
-                                   headers={"Authorization": INVALID_AUTH})
+        # creating default user
+        admin_user_name = "admin_user_to_test_task"
+        create_user_response = self.aux_create_user(admin_user_name, admin_user_name, is_admin=True)
+        self.assertIn(create_user_response.status_code, [201, 400])
+
+        # creating task for default user
+        admin_task_name = "admin_user_task"
+        admin_user_dict = self.aux_find_user_by_user_name(admin_user_name)
+        admin_user_auth = self.aux_get_user_authorization(admin_user_name, admin_user_name)
+        create_task_response = self.aux_create_task_for_user(admin_task_name, admin_user_dict["id"], admin_user_auth)
+        self.assertIn(create_task_response.status_code, [201, 400])
+
+        task_dict = self.aux_find_task_by_name(admin_task_name)
+        response = requests.delete(self.uri_task_list + str(task_dict["id"]), headers={"Authorization": INVALID_AUTH})
         self.assertEquals(response.status_code, 401)
 
     def test_delete_admin_user_task_with_default_user_token(self):
-        '''
+        """
         Default user trying to delete admin task
-        '''
-        response = requests.delete(self.uri_task_list + str(self.aux_get_task_of_admin_user_dict()["id"]),
-                                   headers={"Authorization": self.aux_get_default_user_authorization()})
+        """
+        # creating default user
+        default_user_name = "default_user_to_test_task"
+        create_user_response = self.aux_create_user(default_user_name, default_user_name)
+        self.assertIn(create_user_response.status_code, [201, 400])
+
+        # creating admin user
+        admin_user_name = "admin_user_to_test_task"
+        create_admin_user_response = self.aux_create_user(admin_user_name, admin_user_name, is_admin=True)
+        self.assertIn(create_admin_user_response.status_code, [201, 400])
+
+        # creating task for admin user
+        admin_task_name = "admin_user_task"
+        admin_user_dict = self.aux_find_user_by_user_name(admin_user_name)
+        admin_auth = self.aux_get_user_authorization(admin_user_name, admin_user_name)
+        create_task_response = self.aux_create_task_for_user(admin_task_name, admin_user_dict["id"], admin_auth)
+        self.assertIn(create_task_response.status_code, [201, 400])
+
+        task_dict = self.aux_find_task_by_name(admin_task_name)
+        default_user_auth = self.aux_get_user_authorization(default_user_name, default_user_name)
+        response = requests.delete(self.uri_task_list + str(task_dict["id"]), headers={"Authorization": default_user_auth})
         self.assertEquals(response.status_code, 401)
 
     def test_delete_admin_user_task_with_admin_user_token_self_task(self):
-        response = requests.delete(self.uri_task_list + str(self.aux_get_task_of_admin_user_dict()["id"]),
-                                   headers={"Authorization": self.aux_get_admin_user_authorization()})
+        # creating default user
+        admin_user_name = "admin_user_to_test_task"
+        create_user_response = self.aux_create_user(admin_user_name, admin_user_name, is_admin=True)
+        self.assertIn(create_user_response.status_code, [201, 400])
+
+        # creating task for default user
+        admin_task_name = "admin_user_task"
+        admin_user_dict = self.aux_find_user_by_user_name(admin_user_name)
+        admin_auth = self.aux_get_user_authorization(admin_user_name, admin_user_name)
+        create_task_response = self.aux_create_task_for_user(admin_task_name, admin_user_dict["id"], admin_auth)
+        self.assertIn(create_task_response.status_code, [201, 400])
+
+        task_dict = self.aux_find_task_by_name(admin_task_name)
+        response = requests.delete(self.uri_task_list + str(task_dict["id"]), headers={"Authorization": admin_auth})
         self.assertEquals(response.status_code, 204)
 
-        restore_response = self.aux_create_task_for_admin_user()
-        self.assertEquals(restore_response.status_code, 201)
-
     def test_delete_admin_user_task_with_admin_user_token_another_admin_task(self):
-        '''
+        """
         Alternative admin user trying to delete admin task
-        '''
-        response = requests.delete(self.uri_task_list + str(self.aux_get_task_of_admin_user_dict()["id"]),
-                                   headers={"Authorization": self.aux_get_alternative_admin_user_authorization()})
+        """
+        # creating admin user
+        admin_user_name = "admin_user_to_test_task"
+        create_user_response = self.aux_create_user(admin_user_name, admin_user_name, is_admin=True)
+        self.assertIn(create_user_response.status_code, [201, 400])
+
+        # creating alternative admin user
+        alternative_admin_user_name = "alternative_admin_user_to_test_task"
+        create_alternative_admin_user_response = self.aux_create_user(alternative_admin_user_name, alternative_admin_user_name, is_admin=True)
+        self.assertIn(create_alternative_admin_user_response.status_code, [201, 400])
+
+        # creating task for admin user
+        admin_task_name = "admin_user_task"
+        admin_user_dict = self.aux_find_user_by_user_name(admin_user_name)
+        admin_auth = self.aux_get_user_authorization(admin_user_name, admin_user_name)
+        create_task_response = self.aux_create_task_for_user(admin_task_name, admin_user_dict["id"], admin_auth)
+        self.assertIn(create_task_response.status_code, [201, 400])
+
+        task_dict = self.aux_find_task_by_name(admin_task_name)
+        alternative_admin_user_auth = self.aux_get_user_authorization(alternative_admin_user_name, alternative_admin_user_name)
+        response = requests.delete(self.uri_task_list + str(task_dict["id"]), headers={"Authorization": alternative_admin_user_auth})
         self.assertEquals(response.status_code, 401)
 
 
@@ -1338,3 +1635,93 @@ class ProjectDetailTest(SimpleTestCase):
 
         restore_response = self.aux_create_project_to_admin_user()
         self.assertEquals(restore_response.status_code, 201)
+
+
+class ImpedimentsListTest(KanbanTest):
+
+    def test_create_impediment_without_token(self):
+        pass
+
+    def test_create_impediment_with_invalid_token(self):
+        pass
+
+    def test_create_impediment_with_default_user_token(self):
+        pass
+
+    def test_create_impediment_with_admin_token(self):
+        pass
+
+
+class SprintListTest(KanbanTest):
+    def setUp(self):
+        super(SimpleTestCase, self).setUp()
+        pass
+
+    def test_create_sprint_default_user_responsible_without_token(self):
+        pass
+
+    def test_create_sprint_default_user_responsible_invalid_token(self):
+        pass
+
+    def test_create_sprint_default_user_responsible_with_default_user_token(self):
+        pass
+
+    def test_create_sprint_default_user_responsible_with_another_user_token(self):
+        pass
+
+    def test_create_sprint_default_user_responsible_with_admin_user_token(self):
+        pass
+
+
+    def test_create_sprint_admin_user_responsible_without_token(self):
+        pass
+
+    def test_create_sprint_admin_user_responsible_invalid_toke(self):
+        pass
+
+    def test_create_sprint_admin_user_responsible_with_default_user_token(self):
+        pass
+
+    def test_create_sprint_admin_user_responsible_with_admin_user_token(self):
+        pass
+
+    def test_create_sprint_admin_user_responsible_with_alternative_admin_user_toke(self):
+        pass
+
+
+class SprintDetailTest(KanbanTest):
+    def setUp(self):
+        super(SimpleTestCase, self).setUp()
+        pass
+
+
+    def test_alter_sprint_responsible_from_default_user_to_admin_user_without_token(self):
+        pass
+
+    def test_alter_sprint_responsible_from_default_user_to_admin_user_with_invalid_token(self):
+        pass
+
+    def test_alter_sprint_responsible_from_default_user_to_admin_user_with_default_user_token(self):
+        pass
+
+    def test_alter_sprint_responsible_from_default_user_to_alternative_user_with_default_user_token(self):
+        pass
+
+    def test_alter_sprint_responsible_from_default_user_to_admin_user_with_admin_token(self):
+        pass
+
+
+    def test_alter_sprint_responsible_from_admin_user_to_default_user_without_token(self):
+        pass
+
+    def test_alter_sprint_responsible_from_admin_user_to_default_user_with_invalid_token(self):
+        pass
+
+    def test_alter_sprint_responsible_from_admin_user_to_default_user_with_default_token(self):
+        pass
+
+    def test_alter_sprint_responsible_from_admin_user_to_another_admin_user_with_another_admin_token(self):
+        '''
+        Changing sprint responsible from admin to another admin
+        '''
+        pass

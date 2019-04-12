@@ -25,7 +25,7 @@ from hyper_resource.resources.SpatialResource import SpatialResource
 from hyper_resource.resources.StyleResource import StyleResource
 from hyper_resource.resources.TiffCollectionResource import TiffCollectionResource
 from hyper_resource.resources.TiffResource import TiffResource
-
+from django.shortcuts import get_object_or_404, render
 class APIRoot(NonSpatialEntryPointResource):
     serializer_class = EntryPointSerializer
 
@@ -42,6 +42,11 @@ class APIRoot(NonSpatialEntryPointResource):
 
         ordered_dict_of_link = OrderedDict(sorted(root_links.items(), key=lambda t: t[0]))
         return ordered_dict_of_link
+
+def index(request):
+    #data = open("index.html", 'r').read()
+
+    return HttpResponse(render(request, "scrum/index.html"), content_type="text/html")
 
 class ContinuousActivityList(CollectionResource):
     queryset = ContinuousActivity.objects.all()
@@ -161,12 +166,12 @@ class ProjectDetail(NonSpatialResource):
         user = self.get_user_from_request(request)
 
         if user.is_admin():
-            return super(ProjectDetail, self).delete(request, *kwargs, **kwargs)
+            return super(ProjectDetail, self).put(request, *kwargs, **kwargs)
 
         if user.is_project_owner(project):
             if self.is_setting_project_to_admin(request.data):
                 return self.get_response_for_not_privileged_token("You cannot set this project to admin")
-            return super(ProjectDetail, self).delete(request, *kwargs, **kwargs)
+            return super(ProjectDetail, self).put(request, *kwargs, **kwargs)
 
         return self.get_response_for_not_privileged_token()
 
@@ -356,6 +361,13 @@ class SprintList(CollectionResource):
 
     def token_is_need(self):
         return True
+
+    def token_has_permission(self, request, a_token):
+        if request.method in ['POST']:
+            return True
+
+        return super(SprintList, self).token_has_permission(request, a_token)
+
 
 class SprintDetail(NonSpatialResource):
     serializer_class = SprintSerializer

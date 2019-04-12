@@ -212,6 +212,12 @@ class TaskSerializer(BusinessSerializer):
     # todo: Este metodo foi sobrescrito porque o metodo is_valid default estava ignorando as foreign keys
     def is_valid(self, raise_exception=False):
         super(TaskSerializer, self).is_valid(raise_exception=raise_exception)
+
+        names_from_db = [dicti["name"] for dicti in Task.objects.values(*["name"])]
+        # invalidade POST for task with same name
+        if self.initial_data["name"] in names_from_db and not "id" in self.initial_data:
+            return False
+
         responsible = self.initial_data["responsible"]
         id = self.get_user_id(responsible)
         try:

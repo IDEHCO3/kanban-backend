@@ -189,7 +189,7 @@ class Task(BusinessModel):
     )
 
     id= models.AutoField(primary_key=True, db_column='id_task' )
-    name = models.CharField(max_length=300, blank=True, null=True)
+    name = models.CharField(max_length=300, blank=True, null=True, unique=True)
     description = models.CharField(max_length=1000, blank=True, null=True)
     status = models.CharField(max_length=20, blank=True, null=True)
     order = models.IntegerField(blank=True, null=True)
