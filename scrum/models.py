@@ -76,6 +76,14 @@ class ScrumUser(BusinessModel):
         return  self.id == task.responsible_id
 
     def is_project_owner(self, project):
+        if type(project) == dict:
+            adm_uri_without_slash = project["administrative_responsible"] if project["administrative_responsible"][-1] != "/" else project["administrative_responsible"][:-1]
+            if self.id == int(adm_uri_without_slash.split("/")[-1]):
+                return True
+
+            tech_uri_without_slash = project["technical_responsible"] if project["technical_responsible"][-1] != "/" else project["technical_responsible"][:-1]
+            return self.id == tech_uri_without_slash.split("/")[-1]
+
         return self.id == project.administrative_responsible_id or self.id == project.technical_responsible_id
 
     def encodeField(self, a_field):
@@ -122,7 +130,7 @@ class Project(BusinessModel):
 
 class Sprint(BusinessModel):
     id_sprint = models.AutoField(primary_key=True)
-    code = models.CharField(max_length=100)
+    code = models.CharField(max_length=100, unique=True)
     start = models.DateField(blank=True, null=True)
     end = models.DateField(blank=True, null=True)
 
@@ -250,6 +258,17 @@ class Impediment(BusinessModel):
 
     def to_string(self):
         return self.name
+
+    def is_self_task_impediment(self, user):
+        '''
+        if type(impediment) == dict:
+            task_url = impediment["task"] if impediment["task"][-1] != "/" else impediment["task"][:-1]
+            task_id = int(task_url.split("/")[-1])
+            task = Task.objects.get(pk=task_id)
+            return user.id == task.responsible_id
+        '''
+
+        return user.id == self.task.responsible_id
 
 
 class EntryPoint(BusinessModel):

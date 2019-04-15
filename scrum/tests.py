@@ -618,53 +618,6 @@ class TaskDetailTest(KanbanTest):
         response = requests.get(HOST + "/scrum-list/task-list/filter/name/eq/" + task_name, headers={"Authorization": ADMIN_AUTH})
         return json.loads( response.text )[0]
 
-    '''
-    {
-        "id": 889,
-        "name": "tarefa_editada_1",
-        "description": null,
-        "status": "1",
-        "order": null,
-        "started": null,
-        "due": null,
-        "completed": null,
-        "sprint": null,
-        "responsible": "http://localhost:8001/scrum-list/user-list/31/",
-        "project": null,
-        "typeContinuousActivity": null,
-        "impediments": [],
-        "to_string": "tarefa_editada_1"
-    }
-    '''
-    '''
-    def aux_get_edit_task_setted_to_admin(self):
-        return json.dumps({"id": 908, "name": "default_user_task_edit", "responsible": self.uri_admin})
-
-    def aux_get_edit_task_setted_to_default_user(self):
-        return json.dumps({"id": 909, "name": "admin_task", "responsible": self.uri_default_user})
-
-    def aux_get_edit_task_setted_to_default_user_alternative(self):
-        """
-        Setting task from default user 44 to default user 45
-        """
-        return json.dumps({"id": 910, "name": "default_user_task_edit2", "responsible": self.uri_default_user})
-
-    def aux_restore_default_user_task(self):
-        return requests.put(
-            self.uri_user_task_for_edit,
-            json.dumps({"id": 908, "name": "default_user_task_edit", "responsible": HOST + "/scrum-list/user-list/45"}),
-            headers={"Authorization": ADMIN_AUTH}
-        )
-
-    def aux_restore_admin_task(self):
-        return requests.put(
-            self.uri_admin_task_for_edit,
-            json.dumps({"id": 909, "name": "admin_task", "responsible": HOST + "/scrum-list/user-list/46"}),
-            headers={"Authorization": ADMIN_AUTH}
-        )
-    '''
-
-
     def aux_alter_task_responsible(self, task_dict, new_responsible):
         responsible_url = "/".join( self.aux_remove_last_slash(task_dict["responsible"]).split("/")[:-1] )
         new_responsible_url = responsible_url + "/" + str(new_responsible["id"])
@@ -805,7 +758,6 @@ class TaskDetailTest(KanbanTest):
         self.assertEquals(restore_response.status_code, 204)
 
 
-
     def test_set_task_from_admin_user_to_default_user_without_token(self):
         # creating admin user
         admin_user_name = "admin_user_to_alter_task"
@@ -882,7 +834,6 @@ class TaskDetailTest(KanbanTest):
         response = requests.put(self.uri_task_list + str(task_dict["id"]), json.dumps(updated_task), headers={"Authorization": default_user_auth})
         self.assertEquals(response.status_code, 401)
 
-
     def test_set_task_from_admin_user_to_another_admin_user_with_admin_user_token(self):
         # creating admin user
         admin_user_name = "admin_user_to_alter_task"
@@ -907,59 +858,6 @@ class TaskDetailTest(KanbanTest):
         updated_task = self.aux_alter_task_responsible(task_dict, new_responsible)
         response = requests.put(self.uri_task_list + str(task_dict["id"]), json.dumps(updated_task), headers={"Authorization": admin_user_auth})
         self.assertEquals(response.status_code, 401)
-
-
-    '''
-    def aux_get_admin_user_to_test_tasks_dict(self):
-        response = requests.get(self.uri_admin_for_test_task, headers={"Authorization": ADMIN_AUTH})
-        return json.loads( response.text )[0]
-
-    def aux_get_alternative_admin_user_to_test_tasks_dict(self):
-        response = requests.get(self.uri_alternative_admin_for_test_task, headers={"Authorization": ADMIN_AUTH})
-        return (json.loads( response.text ))[0]
-
-    def aux_get_default_user_to_test_tasks_dict(self):
-        response = requests.get(self.uri_user_for_test_task, headers={"Authorization": ADMIN_AUTH})
-        return (json.loads( response.text ))[0]
-
-    def aux_get_alternative_user_to_test_tasks_dict(self):
-        response = requests.get(self.uri_alternative_user_for_test_task, headers={"Authorization": ADMIN_AUTH})
-        return json.loads( response.text )[0]
-
-
-    def aux_get_admin_user_authorization(self):
-        response = requests.post(HOST + "/scrum-list/user-list/login/", json.dumps({"user_name": "admin_user_to_test_tasks", "password": "admin_user_to_test_tasks"}) )
-        return "Bearer " + response.headers["x-access-token"]
-
-    def aux_get_alternative_admin_user_authorization(self):
-        response = requests.post(HOST + "/scrum-list/user-list/login/", json.dumps({"user_name": "alternative_admin_user_to_test_tasks", "password": "alternative_admin_user_to_test_tasks"}) )
-        return "Bearer " + response.headers["x-access-token"]
-
-    def aux_get_default_user_authorization(self):
-        response = requests.post(HOST + "/scrum-list/user-list/login/", json.dumps({"user_name": "default_user_to_test_tasks", "password": "default_user_to_test_tasks"}) )
-        return "Bearer " + response.headers["x-access-token"]
-
-    def aux_get_alternative_default_user_authorization(self):
-        response = requests.post(HOST + "/scrum-list/user-list/login/", json.dumps({"user_name": "alternative_user_to_test_tasks", "password": "alternative_user_to_test_tasks"}) )
-        return "Bearer " + response.headers["x-access-token"]
-
-
-    def aux_get_task_of_admin_user_dict(self):
-        response = requests.get(self.uri_admin_task, headers={"Authorization": ADMIN_AUTH})
-        return json.loads( response.text )[0]
-
-    def aux_get_task_of_alternative_admin_user_dict(self):
-        response = requests.get(self.uri_alternative_admin_task, headers={"Authorization": ADMIN_AUTH})
-        return (json.loads( response.text ))[0]
-
-    def aux_get_task_of_default_user_dict(self):
-        response = requests.get(self.uri_user_task, headers={"Authorization": ADMIN_AUTH})
-        return json.loads( response.text )[0]
-
-    def aux_get_task_of_alternative_default_user_dict(self):
-        response = requests.get(self.uri_alternative_user_task, headers={"Authorization": ADMIN_AUTH})
-        return (json.loads( response.text ))[0]
-    '''
 
 
     def test_delete_default_user_task_without_token(self):
@@ -1151,7 +1049,7 @@ class TaskDetailTest(KanbanTest):
         create_alternative_admin_user_response = self.aux_create_user(alternative_admin_user_name, alternative_admin_user_name, is_admin=True)
         self.assertIn(create_alternative_admin_user_response.status_code, [201, 400])
 
-        # creating task for admin user
+        # creating task for admin usertest_set_task_from_admin_user_to_another_admin_user_with_admin_user_token
         admin_task_name = "admin_user_task"
         admin_user_dict = self.aux_find_user_by_user_name(admin_user_name)
         admin_auth = self.aux_get_user_authorization(admin_user_name, admin_user_name)
@@ -1217,425 +1115,516 @@ class ProjectListTest(SimpleTestCase):
         pass
 
 #python manage.py test scrum.tests.ProjectDetailTest --testrunner=scrum.tests.NoDbTestRunner
-class ProjectDetailTest(SimpleTestCase):
+class ProjectDetailTest(KanbanTest):
     def setUp(self):
-        self.url_user_register = HOST + "/scrum-list/user-list/register/"
         self.url_project_list = HOST + "/scrum-list/project-list/"
-        self.url_user_login = HOST + "/scrum-list/user-list/login/"
 
-        self.aux_create_admin_to_test_project()
-        self.aux_create_default_user_to_test_project()
-        self.aux_create_alternative_admin_user_to_test_project()
-        self.aux_create_alternative_user_to_test_project()
-
-        self.aux_create_project_to_admin_user()
-        self.aux_create_project_to_default_user()
-        self.aux_create_project_to_alternative_admin()
-        self.aux_create_project_to_alternative_user()
-
-
-    #@skip("This isn't a test")
-    def aux_create_admin_to_test_project(self):
-        data = json.dumps({
-            "user_name": "admin_user_to_test_project",
-            "password": "admin_user_to_test_project",
-            "role": "admin"
-        })
-        requests.post(self.url_user_register, data, headers={"Authorization": ADMIN_AUTH, "Content-Type": "application/json"})
-
-    #@skip("This isn't a test")
-    def aux_create_default_user_to_test_project(self):
-        data = json.dumps({
-            "user_name": "default_user_to_test_project",
-            "password": "default_user_to_test_project",
-        })
-        requests.post(self.url_user_register, data, headers={"Authorization": ADMIN_AUTH, "Content-Type": "application/json"})
-
-    #@skip("This isn't a test")
-    def aux_create_alternative_admin_user_to_test_project(self):
-        data = json.dumps({
-            "user_name": "alternative_admin_user_to_test_project",
-            "password": "alternative_admin_user_to_test_project",
-            "role": "admin"
-        })
-        requests.post(self.url_user_register, data, headers={"Authorization": ADMIN_AUTH,"Content-Type": "application/json"})
-
-    #@skip("This isn't a test")
-    def aux_create_alternative_user_to_test_project(self):
-        data = json.dumps({
-            "user_name": "alternative_user_to_test_project",
-            "password": "alternative_user_to_test_project",
-        })
-        requests.post(self.url_user_register, data, headers={"Authorization": ADMIN_AUTH, "Content-Type": "application/json"})
-
-
-    #@skip("This isn't a test")
-    def aux_get_admin_user_to_test_project_dict(self):
-        url = HOST + "/scrum-list/user-list/filter/user_name/eq/admin_user_to_test_project"
-        response = requests.get(url, headers={"Authorization": ADMIN_AUTH})
-        #print("STATUS:"+ str(response.status_code))
-        return json.loads( response.text )[0]
-
-    #@skip("This isn't a test")
-    def aux_get_alternative_admin_user_to_test_project_dict(self):
-        url = HOST + "/scrum-list/user-list/filter/user_name/eq/alternative_admin_user_to_test_project"
-        response = requests.get(url, headers={"Authorization": ADMIN_AUTH})
-        return (json.loads( response.text ))[0]
-
-    #@skip("This isn't a test")
-    def aux_get_default_user_to_test_project_dict(self):
-        url = HOST + "/scrum-list/user-list/filter/user_name/eq/default_user_to_test_project"
-        response = requests.get(url, headers={"Authorization": ADMIN_AUTH})
-        return (json.loads( response.text ))[0]
-
-    #@skip("This isn't a test")
-    def aux_get_alternative_user_to_test_project_dict(self):
-        url = HOST + "/scrum-list/user-list/filter/user_name/eq/alternative_user_to_test_project"
-        response = requests.get(url, headers={"Authorization": ADMIN_AUTH})
-        return json.loads( response.text )[0]
-
-
-    #@skip("This isn't a test")
-    def aux_get_admin_user_authorization(self):
-        response = requests.post(self.url_user_login, json.dumps({"user_name": "admin_user_to_test_project", "password": "admin_user_to_test_project"}) )
-        return "Bearer " + response.headers["x-access-token"]
-
-    #@skip("This isn't a test")
-    def aux_get_default_user_authorization(self):
-        response = requests.post(self.url_user_login, json.dumps({"user_name": "default_user_to_test_project", "password": "default_user_to_test_project"}) )
-        return "Bearer " + response.headers["x-access-token"]
-
-    #@skip("This isn't a test")
-    def aux_get_alternative_admin_user_authorization(self):
-        response = requests.post(self.url_user_login, json.dumps({"user_name": "alternative_admin_user_to_test_project", "password": "alternative_admin_user_to_test_project"}) )
-        return "Bearer " + response.headers["x-access-token"]
-
-    #@skip("This isn't a test")
-    def aux_get_alternative_user_authorization(self):
-        response = requests.post(self.url_user_login, json.dumps({"user_name": "alternative_user_to_test_project", "password": "alternative_user_to_test_project"}) )
-        return "Bearer " + response.headers["x-access-token"]
-
-
-    #@skip("This isn't a test")
-    def aux_create_project_to_admin_user(self):
-        user_id = str(self.aux_get_admin_user_to_test_project_dict()["id"])
-        user_auth = self.aux_get_admin_user_authorization()
-        data = json.dumps({
-            "name": "admin_project_to_edit",
-            "administrative_responsible": HOST + "/scrum-list/user-list/" + user_id,
-            "technical_responsible": HOST + "/scrum-list/user-list/" + user_id,
-        })
-        return requests.post(self.url_project_list, data, headers={"Authorization": user_auth, "Content-Type": "application/json"})
-
-    #@skip("This isn't a test")
-    def aux_create_project_to_default_user(self):
-        user_id = str(self.aux_get_default_user_to_test_project_dict()["id"])
-        user_auth = self.aux_get_default_user_authorization()
-        data = json.dumps({
-            "name": "default_user_project_to_edit",
-            "administrative_responsible": HOST + "/scrum-list/user-list/" + user_id,
-            "technical_responsible": HOST + "/scrum-list/user-list/" + user_id,
-        })
-        return requests.post(self.url_project_list, data, headers={"Authorization": user_auth, "Content-Type": "application/json"})
-
-    #@skip("This isn't a test")
-    def aux_create_project_to_alternative_admin(self):
-        user_id = str(self.aux_get_alternative_admin_user_to_test_project_dict()["id"])
-        user_auth = self.aux_get_alternative_admin_user_authorization()
-        data = json.dumps({
-            "name": "alternative_admin_project_to_edit",
-            "administrative_responsible": HOST + "/scrum-list/user-list/" + user_id,
-            "technical_responsible": HOST + "/scrum-list/user-list/" + user_id,
-        })
-        return requests.post(self.url_project_list, data, headers={"Authorization": user_auth, "Content-Type": "application/json"})
-
-    #@skip("This isn't a test")
-    def aux_create_project_to_alternative_user(self):
-        user_id = str(self.aux_get_alternative_user_to_test_project_dict()["id"])
-        user_auth = self.aux_get_alternative_user_authorization()
-        data = json.dumps({
-            "name": "alternative_user_project_to_adit",
-            "administrative_responsible": HOST + "/scrum-list/user-list/" + user_id,
-            "technical_responsible": HOST + "/scrum-list/user-list/" + user_id,
-        })
-        return requests.post(self.url_project_list, data, headers={"Authorization": user_auth, "Content-Type": "application/json"})
-
-    #@skip("This isn't a test")
-    def restore_admin_project(self):
-        project_id = self.aux_get_admin_project_dict()["id"]
-        admin_user_id = self.aux_get_admin_user_to_test_project_dict()["id"]
-        data = json.dumps( {
-            "id": project_id,
-            "name": "admin_project_to_edit",
-            "administrative_responsible": HOST + "/scrum-list/user-list/" + str(admin_user_id),
-            "technical_responsible": HOST + "/scrum-list/user-list/" + str(admin_user_id),
-        } )
-
-        admin_auth = self.aux_get_admin_user_authorization()
-        return requests.put(self.url_project_list + str(project_id), data, headers={"Authorization": admin_auth, "Content-Type": "application/json"})
-
-    #@skip("This isn't a test")
-    def restore_default_user_project(self):
-        project_id = self.aux_get_default_user_project_dict()["id"]
-        default_user_id = self.aux_get_default_user_to_test_project_dict()["id"]
-        data = json.dumps( {
-            "id": project_id,
-            "name": "default_user_project_to_edit",
-            "administrative_responsible": HOST + "/scrum-list/user-list/" + str(default_user_id),
-            "technical_responsible": HOST + "/scrum-list/user-list/" + str(default_user_id),
-        } )
-
-        default_user_auth = self.aux_get_default_user_authorization()
-        return requests.put(self.url_project_list + str(project_id), data, headers={"Authorization": ADMIN_AUTH, "Content-Type": "application/json"})
-
-
-    #@skip("This isn't a test")
-    def aux_get_admin_project_dict(self):
-        response = requests.get(self.url_project_list + "filter/name/eq/admin_project_to_edit", headers={"Authorization": ADMIN_AUTH})
-        return json.loads( response.text )[0]
-
-    #@skip("This isn't a test")
-    def aux_get_default_user_project_dict(self):
-        response = requests.get(self.url_project_list + "filter/name/eq/default_user_project_to_edit", headers={"Authorization": ADMIN_AUTH})
-        return json.loads( response.text )[0]
-
-    #@skip("This isn't a test")
-    def aux_get_alternative_admin_project_dict(self):
-        response = requests.get(self.url_project_list + "filter/name/eq/alternative_admin_project_to_edit", headers={"Authorization": ADMIN_AUTH})
-        return json.loads( response.text )[0]
-
-    #@skip("This isn't a test")
-    def aux_get_alternative_user_project_dict(self):
-        response = requests.get(self.url_project_list + "filter/name/eq/alternative_user_project_to_adit", headers={"Authorization": ADMIN_AUTH})
-        return json.loads( response.text )[0]
-
-
-    #@skip("This isn't a test")
-    def aux_get_admin_project_setted_to_default_user_project_dict(self):
-        project_id = str(self.aux_get_admin_project_dict()["id"])
-        default_user_id = self.aux_get_default_user_to_test_project_dict()["id"]
-        return {
-            "id": project_id,
-            "name": "admin_project_to_edit",
-            "administrative_responsible": HOST + "/scrum-list/user-list/" + str(default_user_id),
-            "technical_responsible": HOST + "/scrum-list/user-list/" + str(default_user_id),
+    def aux_create_project_for_user(self, project_name, responsible_id, responsible_auth):
+        data = {
+            "name": project_name,
+            "administrative_responsible": HOST + "/scrum-list/user-list/" + str(responsible_id),
+            "technical_responsible": HOST + "/scrum-list/user-list/" + str(responsible_id)
         }
+        return requests.post(self.url_project_list, json.dumps(data),
+                             headers={"Authorization": responsible_auth, "Content-Type": "application/json"})
 
-    #@skip("This isn't a test")
-    def aux_get_admin_project_setted_to_alternative_user_project_dict(self):
-        project_id = str(self.aux_get_admin_project_dict()["id"])
-        alternative_user_id = self.aux_get_alternative_user_to_test_project_dict()["id"]
-        return {
-            "id": project_id,
-            "name": "admin_project_to_edit",
-            "administrative_responsible": HOST + "/scrum-list/user-list/" + str(alternative_user_id),
-            "technical_responsible": HOST + "/scrum-list/user-list/" + str(alternative_user_id),
-        }
+    def aux_find_project_by_name(self, project_name):
+        response = requests.get(HOST + "/scrum-list/project-list/filter/name/eq/" + project_name, headers={"Authorization": ADMIN_AUTH})
+        return json.loads( response.text )[0]
 
-    #@skip("This isn't a test")
-    def aux_get_default_user_project_setted_to_admin_user_project_dict(self):
-        project_id = self.aux_get_default_user_project_dict()["id"]
-        admin_user_id = self.aux_get_admin_user_to_test_project_dict()["id"]
-        return {
-            "id": project_id,
-            "name": "default_user_project_to_edit",
-            "administrative_responsible": HOST + "/scrum-list/user-list/" + str(admin_user_id),
-            "technical_responsible": HOST + "/scrum-list/user-list/" + str(admin_user_id),
-        }
+    def aux_alter_project_responsible(self, project_dict, new_responsible):
+        responsible_url = "/".join( self.aux_remove_last_slash(project_dict["administrative_responsible"]).split("/")[:-1] )
+        new_responsible_url = responsible_url + "/" + str(new_responsible["id"])
+        project_dict["administrative_responsible"] = new_responsible_url
+        project_dict["technical_responsible"] = new_responsible_url
+        return project_dict
 
-    #@skip("This isn't a test")
-    def aux_get_admin_user_project_setted_to_alternative_admin_project_dict(self):
-        project_id = self.aux_get_admin_project_dict()["id"]
-        alternative_admin_id = self.aux_get_admin_user_to_test_project_dict()["id"]
-        return {
-            "id": project_id,
-            "name": "default_user_project_to_edit",
-            "administrative_responsible": HOST + "/scrum-list/user-list/" + str(alternative_admin_id),
-            "technical_responsible": HOST + "/scrum-list/user-list/" + str(alternative_admin_id),
-        }
+    '''
+    {
+        "id": 78,
+        "name": "alternative_admin_project_to_edit",
+        "description": null,
+        "start": null,
+        "end": null,
+        "administrative_responsible": "http://127.0.0.1:8000/scrum-list/user-list/475",
+        "technical_responsible": "http://127.0.0.1:8000/scrum-list/user-list/475",
+    },
+    '''
 
 
     # Changing project responsable from admin to default user (alternative user is also an defalt user)
     def test_set_project_from_admin_to_default_user_without_token(self):
-        admin_proj_set_default_user_dict = self.aux_get_admin_project_setted_to_default_user_project_dict()
-        response = requests.put(
-            self.url_project_list + str(admin_proj_set_default_user_dict["id"]),
-            json.dumps(admin_proj_set_default_user_dict),
-            headers={"Content-Type": "application/json"}
-        )
+        admin_user_name = "admin_user_to_alter_project"
+        create_admin_user_response = self.aux_create_user(admin_user_name, admin_user_name, is_admin=True)
+        self.assertIn(create_admin_user_response.status_code, [400, 201])
+
+        admin_project_name = "admin_project_to_alter"
+        admin_user_dict = self.aux_find_user_by_user_name(admin_user_name)
+        admin_user_auth = self.aux_get_user_authorization(admin_user_name, admin_user_name)
+        create_project_reponse = self.aux_create_project_for_user(admin_project_name, admin_user_dict["id"], admin_user_auth)
+        self.assertIn(create_project_reponse.status_code, [400, 201])
+
+        default_user_name = "default_user_to_alter_project"
+        create_default_user_response = self.aux_create_user(default_user_name, default_user_name)
+        self.assertIn(create_default_user_response.status_code, [400, 201])
+
+        project_dict = self.aux_find_project_by_name(admin_project_name)
+        default_user_dict = self.aux_find_user_by_user_name(default_user_name)
+        updated_project = self.aux_alter_project_responsible(project_dict, default_user_dict)
+
+        response = requests.put(self.url_project_list + str(project_dict["id"]), json.dumps(updated_project))
         self.assertEquals(response.status_code, 401)
 
     def test_set_project_from_admin_to_default_user_with_invalid_token(self):
-        admin_proj_set_default_user_dict = self.aux_get_admin_project_setted_to_default_user_project_dict()
-        response = requests.put(
-            self.url_project_list + str(admin_proj_set_default_user_dict["id"]),
-            json.dumps(admin_proj_set_default_user_dict),
-            headers={"Authorization": INVALID_AUTH, "Content-Type": "application/json"}
-        )
+        admin_user_name = "admin_user_to_alter_project"
+        create_admin_user_response = self.aux_create_user(admin_user_name, admin_user_name, is_admin=True)
+        self.assertIn(create_admin_user_response.status_code, [400, 201])
+
+        admin_project_name = "admin_project_to_alter"
+        admin_user_dict = self.aux_find_user_by_user_name(admin_user_name)
+        admin_user_auth = self.aux_get_user_authorization(admin_user_name, admin_user_name)
+        create_project_reponse = self.aux_create_project_for_user(admin_project_name, admin_user_dict["id"],
+                                                                  admin_user_auth)
+        self.assertIn(create_project_reponse.status_code, [400, 201])
+
+        default_user_name = "default_user_to_alter_project"
+        create_default_user_response = self.aux_create_user(default_user_name, default_user_name)
+        self.assertIn(create_default_user_response.status_code, [400, 201])
+
+        project_dict = self.aux_find_project_by_name(admin_project_name)
+        default_user_dict = self.aux_find_user_by_user_name(default_user_name)
+        updated_project = self.aux_alter_project_responsible(project_dict, default_user_dict)
+
+        response = requests.put(self.url_project_list + str(project_dict["id"]), json.dumps(updated_project), headers={"Authorization": INVALID_AUTH})
         self.assertEquals(response.status_code, 401)
 
     def test_set_project_from_admin_to_default_user_with_default_user_token(self):
-        admin_proj_set_default_user_dict = self.aux_get_admin_project_setted_to_default_user_project_dict()
-        default_user_auth = self.aux_get_default_user_authorization()
-        response = requests.put(
-            self.url_project_list + str(admin_proj_set_default_user_dict["id"]),
-            json.dumps(admin_proj_set_default_user_dict),
-            headers={"Authorization": default_user_auth, "Content-Type": "application/json"}
-        )
+        admin_user_name = "admin_user_to_alter_project"
+        create_admin_user_response = self.aux_create_user(admin_user_name, admin_user_name, is_admin=True)
+        self.assertIn(create_admin_user_response.status_code, [400, 201])
+
+        admin_project_name = "admin_project_to_alter"
+        admin_user_dict = self.aux_find_user_by_user_name(admin_user_name)
+        admin_user_auth = self.aux_get_user_authorization(admin_user_name, admin_user_name)
+        create_project_reponse = self.aux_create_project_for_user(admin_project_name, admin_user_dict["id"],
+                                                                  admin_user_auth)
+        self.assertIn(create_project_reponse.status_code, [400, 201])
+
+        default_user_name = "default_user_to_alter_project"
+        create_default_user_response = self.aux_create_user(default_user_name, default_user_name)
+        self.assertIn(create_default_user_response.status_code, [400, 201])
+
+        project_dict = self.aux_find_project_by_name(admin_project_name)
+        default_user_dict = self.aux_find_user_by_user_name(default_user_name)
+        updated_project = self.aux_alter_project_responsible(project_dict, default_user_dict)
+
+        default_user_auth = self.aux_get_user_authorization(default_user_name, default_user_name)
+        response = requests.put(self.url_project_list + str(project_dict["id"]), json.dumps(updated_project),
+                                headers={"Authorization": default_user_auth})
         self.assertEquals(response.status_code, 401)
 
     def test_set_project_from_admin_to_alternative_user_with_default_user_token(self):
-        admin_proj_set_alternative_user_dict = self.aux_get_admin_project_setted_to_alternative_user_project_dict()
-        default_user_auth = self.aux_get_default_user_authorization()
-        response = requests.put(
-            self.url_project_list + str(admin_proj_set_alternative_user_dict["id"]),
-            json.dumps(admin_proj_set_alternative_user_dict),
-            headers={"Authorization": default_user_auth, "Content-Type": "application/json"}
-        )
+        # creating admin user
+        admin_user_name = "admin_user_to_alter_project"
+        create_admin_user_response = self.aux_create_user(admin_user_name, admin_user_name, is_admin=True)
+        self.assertIn(create_admin_user_response.status_code, [400, 201])
+
+        # creating admin project
+        admin_project_name = "admin_project_to_alter"
+        admin_user_dict = self.aux_find_user_by_user_name(admin_user_name)
+        admin_user_auth = self.aux_get_user_authorization(admin_user_name, admin_user_name)
+        create_project_reponse = self.aux_create_project_for_user(admin_project_name, admin_user_dict["id"],
+                                                                  admin_user_auth)
+        self.assertIn(create_project_reponse.status_code, [400, 201])
+
+        # creating alternative user
+        alternative_user_name = "alternative_user_to_alter_project"
+        create_alternative_user_response = self.aux_create_user(alternative_user_name, alternative_user_name)
+        self.assertIn(create_alternative_user_response.status_code, [400, 201])
+
+        # setting project to alternative user
+        project_dict = self.aux_find_project_by_name(admin_project_name)
+        alternative_user_dict = self.aux_find_user_by_user_name(alternative_user_name)
+        updated_project = self.aux_alter_project_responsible(project_dict, alternative_user_dict)
+
+        # creating default user (to get his authorization)
+        default_user_name = "default_user_to_alter_project"
+        create_default_user_response = self.aux_create_user(default_user_name, default_user_name)
+        self.assertIn(create_default_user_response.status_code, [400, 201])
+        default_user_auth = self.aux_get_user_authorization(default_user_name, default_user_name)
+
+        response = requests.put(self.url_project_list + str(project_dict["id"]), json.dumps(updated_project),
+                                headers={"Authorization": default_user_auth})
         self.assertEquals(response.status_code, 401)
 
     def test_set_project_from_admin_to_default_user_with_admin_user_token(self):
-        admin_proj_set_default_user_dict = self.aux_get_admin_project_setted_to_default_user_project_dict()
-        admin_user_auth = self.aux_get_admin_user_authorization()
-        response = requests.put(
-            self.url_project_list + str(admin_proj_set_default_user_dict["id"]),
-            json.dumps(admin_proj_set_default_user_dict),
-            headers={"Authorization": admin_user_auth, "Content-Type": "application/json"}
-        )
+        admin_user_name = "admin_user_to_alter_project"
+        create_admin_user_response = self.aux_create_user(admin_user_name, admin_user_name, is_admin=True)
+        self.assertIn(create_admin_user_response.status_code, [400, 201])
+
+        admin_project_name = "admin_project_to_alter"
+        admin_user_dict = self.aux_find_user_by_user_name(admin_user_name)
+        admin_user_auth = self.aux_get_user_authorization(admin_user_name, admin_user_name)
+        create_project_reponse = self.aux_create_project_for_user(admin_project_name, admin_user_dict["id"],
+                                                                  admin_user_auth)
+        self.assertIn(create_project_reponse.status_code, [400, 201])
+
+        default_user_name = "default_user_to_alter_project"
+        create_default_user_response = self.aux_create_user(default_user_name, default_user_name)
+        self.assertIn(create_default_user_response.status_code, [400, 201])
+
+        project_dict = self.aux_find_project_by_name(admin_project_name)
+        default_user_dict = self.aux_find_user_by_user_name(default_user_name)
+        updated_project = self.aux_alter_project_responsible(project_dict, default_user_dict)
+
+
+        response = requests.put(self.url_project_list + str(project_dict["id"]), json.dumps(updated_project),
+                                headers={"Authorization": admin_user_auth})
         self.assertEquals(response.status_code, 204)
 
-        #restore_response = self.restore_admin_project()
-        #self.assertEquals(restore_response.status_code, 204)
+        restored_project = self.aux_alter_project_responsible(project_dict, admin_user_dict)
+        response = requests.put(self.url_project_list + str(project_dict["id"]), json.dumps(restored_project),
+                                headers={"Authorization": admin_user_auth})
+        self.assertEquals(response.status_code, 204)
 
 
     # Changing project responsable from default user to admin and alternative admin user
     def test_set_project_from_default_user_to_admin_user_without_token(self):
-        default_user_proj_set_admin_user = self.aux_get_default_user_project_setted_to_admin_user_project_dict()
-        response = requests.put(
-            self.url_project_list + str(default_user_proj_set_admin_user["id"]),
-            json.dumps(default_user_proj_set_admin_user),
-            headers={"Content-Type": "application/json"}
-        )
+        default_user_name = "default_user_to_alter_project"
+        create_default_user_response = self.aux_create_user(default_user_name, default_user_name)
+        self.assertIn(create_default_user_response.status_code, [400, 201])
+
+        default_user_project_name = "default_user_project_to_alter"
+        default_user_dict = self.aux_find_user_by_user_name(default_user_name)
+        default_user_auth = self.aux_get_user_authorization(default_user_name, default_user_name)
+        create_project_reponse = self.aux_create_project_for_user(default_user_project_name, default_user_dict["id"],
+                                                                  default_user_auth)
+        self.assertIn(create_project_reponse.status_code, [400, 201])
+
+        admin_user_name = "admin_user_to_alter_project"
+        create_admin_user_response = self.aux_create_user(admin_user_name, admin_user_name, is_admin=True)
+        self.assertIn(create_admin_user_response.status_code, [400, 201])
+
+        project_dict = self.aux_find_project_by_name(default_user_project_name)
+        admin_user_dict = self.aux_find_user_by_user_name(admin_user_name)
+        updated_project = self.aux_alter_project_responsible(project_dict, admin_user_dict)
+
+        response = requests.put(self.url_project_list + str(project_dict["id"]), json.dumps(updated_project))
         self.assertEquals(response.status_code, 401)
 
     def test_set_project_from_default_user_to_admin_user_with_invalid_token(self):
-        default_user_proj_set_admin_user = self.aux_get_default_user_project_setted_to_admin_user_project_dict()
-        response = requests.put(
-            self.url_project_list + str(default_user_proj_set_admin_user["id"]),
-            json.dumps(default_user_proj_set_admin_user),
-            headers={"Authorization": INVALID_AUTH, "Content-Type": "application/json"}
-        )
+        default_user_name = "default_user_to_alter_project"
+        create_default_user_response = self.aux_create_user(default_user_name, default_user_name)
+        self.assertIn(create_default_user_response.status_code, [400, 201])
+
+        default_user_project_name = "default_user_project_to_alter"
+        default_user_dict = self.aux_find_user_by_user_name(default_user_name)
+        default_user_auth = self.aux_get_user_authorization(default_user_name, default_user_name)
+        create_project_reponse = self.aux_create_project_for_user(default_user_project_name, default_user_dict["id"],
+                                                                  default_user_auth)
+        self.assertIn(create_project_reponse.status_code, [400, 201])
+
+        admin_user_name = "admin_user_to_alter_project"
+        create_admin_user_response = self.aux_create_user(admin_user_name, admin_user_name, is_admin=True)
+        self.assertIn(create_admin_user_response.status_code, [400, 201])
+
+        project_dict = self.aux_find_project_by_name(default_user_project_name)
+        admin_user_dict = self.aux_find_user_by_user_name(admin_user_name)
+        updated_project = self.aux_alter_project_responsible(project_dict, admin_user_dict)
+
+        response = requests.put(self.url_project_list + str(project_dict["id"]), json.dumps(updated_project), headers={"Authorization": INVALID_AUTH})
         self.assertEquals(response.status_code, 401)
 
     def test_set_project_from_default_user_to_admin_user_with_default_user_token(self):
-        default_user_proj_set_admin_user = self.aux_get_default_user_project_setted_to_admin_user_project_dict()
-        response = requests.put(
-            self.url_project_list + str(default_user_proj_set_admin_user["id"]),
-            json.dumps(default_user_proj_set_admin_user),
-            headers={"Authorization": self.aux_get_default_user_authorization(), "Content-Type": "application/json"}
-        )
+        default_user_name = "default_user_to_alter_project"
+        create_default_user_response = self.aux_create_user(default_user_name, default_user_name)
+        self.assertIn(create_default_user_response.status_code, [400, 201])
+
+        default_user_project_name = "default_user_project_to_alter"
+        default_user_dict = self.aux_find_user_by_user_name(default_user_name)
+        default_user_auth = self.aux_get_user_authorization(default_user_name, default_user_name)
+        create_project_reponse = self.aux_create_project_for_user(default_user_project_name, default_user_dict["id"],
+                                                                  default_user_auth)
+        self.assertIn(create_project_reponse.status_code, [400, 201])
+
+        admin_user_name = "admin_user_to_alter_project"
+        create_admin_user_response = self.aux_create_user(admin_user_name, admin_user_name, is_admin=True)
+        self.assertIn(create_admin_user_response.status_code, [400, 201])
+
+        project_dict = self.aux_find_project_by_name(default_user_project_name)
+        admin_user_dict = self.aux_find_user_by_user_name(admin_user_name)
+        updated_project = self.aux_alter_project_responsible(project_dict, admin_user_dict)
+
+        response = requests.put(self.url_project_list + str(project_dict["id"]), json.dumps(updated_project),
+                                headers={"Authorization": default_user_auth})
         self.assertEquals(response.status_code, 401)
 
     def test_set_project_from_default_user_to_admin_user_with_admin_user_token(self):
-        default_user_proj_set_admin_user = self.aux_get_default_user_project_setted_to_admin_user_project_dict()
-        response = requests.put(
-            self.url_project_list + str(default_user_proj_set_admin_user["id"]),
-            json.dumps(default_user_proj_set_admin_user),
-            headers={"Authorization": self.aux_get_admin_user_authorization(), "Content-Type": "application/json"}
-        )
+        default_user_name = "default_user_to_alter_project"
+        create_default_user_response = self.aux_create_user(default_user_name, default_user_name)
+        self.assertIn(create_default_user_response.status_code, [400, 201])
+
+        default_user_project_name = "default_user_project_to_alter"
+        default_user_dict = self.aux_find_user_by_user_name(default_user_name)
+        default_user_auth = self.aux_get_user_authorization(default_user_name, default_user_name)
+        create_project_reponse = self.aux_create_project_for_user(default_user_project_name, default_user_dict["id"],
+                                                                  default_user_auth)
+        self.assertIn(create_project_reponse.status_code, [400, 201])
+
+        admin_user_name = "admin_user_to_alter_project"
+        create_admin_user_response = self.aux_create_user(admin_user_name, admin_user_name, is_admin=True)
+        self.assertIn(create_admin_user_response.status_code, [400, 201])
+
+        project_dict = self.aux_find_project_by_name(default_user_project_name)
+        admin_user_dict = self.aux_find_user_by_user_name(admin_user_name)
+        updated_project = self.aux_alter_project_responsible(project_dict, admin_user_dict)
+
+        admin_user_auth = self.aux_get_user_authorization(admin_user_name, admin_user_name)
+        response = requests.put(self.url_project_list + str(project_dict["id"]), json.dumps(updated_project),
+                                headers={"Authorization": admin_user_auth})
         self.assertEquals(response.status_code, 204)
 
-        #restore_response = self.restore_default_user_project()
-        #self.assertEquals(restore_response.status_code, 204)
-
-    def test_set_project_from_admin_user_to_alternative_admin_user_with_admin_token(self):
-        admin_user_proj_set_alternative_admin = self.aux_get_admin_user_project_setted_to_alternative_admin_project_dict()
-        response = requests.put(
-            self.url_project_list + str(admin_user_proj_set_alternative_admin["id"]),
-            json.dumps(admin_user_proj_set_alternative_admin),
-            headers={"Authorization": self.aux_get_admin_user_authorization(), "Content-Type": "application/json"}
-        )
+        # restoring project
+        old_project_dict = self.aux_find_project_by_name(default_user_project_name)
+        original_project = self.aux_alter_project_responsible(old_project_dict, default_user_dict)
+        response = requests.put(self.url_project_list + str(old_project_dict["id"]), json.dumps(original_project),
+                                headers={"Authorization": admin_user_auth})
         self.assertEquals(response.status_code, 204)
 
-        #restore_response = self.restore_admin_project()
-        #self.assertEquals(restore_response.status_code, 204)
+    def test_set_project_from_admin_to_another_admin_user_with_admin_token(self):
+        admin_user_name = "admin_user_to_alter_project"
+        create_admin_user_response = self.aux_create_user(admin_user_name, admin_user_name, is_admin=True)
+        self.assertIn(create_admin_user_response.status_code, [400, 201])
+
+        admin_project_name = "admin_project_to_alter"
+        admin_user_dict = self.aux_find_user_by_user_name(admin_user_name)
+        admin_user_auth = self.aux_get_user_authorization(admin_user_name, admin_user_name)
+        create_project_reponse = self.aux_create_project_for_user(admin_project_name, admin_user_dict["id"],
+                                                                  admin_user_auth)
+        self.assertIn(create_project_reponse.status_code, [400, 201])
+
+        alternative_admin_user_name = "alternative_admin_user_to_alter_project"
+        create_alternative_admin_user_response = self.aux_create_user(alternative_admin_user_name, alternative_admin_user_name, is_admin=True)
+        self.assertIn(create_alternative_admin_user_response.status_code, [400, 201])
+
+        project_dict = self.aux_find_project_by_name(admin_project_name)
+        alternative_admin_user_dict = self.aux_find_user_by_user_name(alternative_admin_user_name)
+        updated_project = self.aux_alter_project_responsible(project_dict, alternative_admin_user_dict)
+
+        response = requests.put(self.url_project_list + str(project_dict["id"]), json.dumps(updated_project),
+                                headers={"Authorization": admin_user_auth})
+        self.assertEquals(response.status_code, 401)
 
 
     def test_delete_default_user_project_without_token(self):
-        response = requests.delete(self.url_project_list + str(self.aux_get_default_user_project_dict()["id"]))
+        default_user_name = "default_user_to_delete_project"
+        create_default_user_response = self.aux_create_user(default_user_name, default_user_name)
+        self.assertIn(create_default_user_response.status_code, [400, 201])
+
+        # creating project for default user
+        default_user_project_name = "default_user_project"
+        default_user_dict = self.aux_find_user_by_user_name(default_user_name)
+        default_user_auth = self.aux_get_user_authorization(default_user_name, default_user_name)
+        create_project_response = self.aux_create_project_for_user(default_user_project_name, default_user_dict["id"],
+                                                             default_user_auth)
+        self.assertIn(create_project_response.status_code, [201, 400])
+
+        project_dict = self.aux_find_project_by_name(default_user_project_name)
+        response = requests.delete(self.url_project_list + str(project_dict["id"]))
         self.assertEquals(response.status_code, 401)
 
     def test_delete_default_user_project_with_invalid_token(self):
-        response = requests.delete(self.url_project_list + str(self.aux_get_default_user_project_dict()["id"]),
-                                   headers={"Authorization": INVALID_AUTH})
+        default_user_name = "default_user_to_delete_project"
+        create_default_user_response = self.aux_create_user(default_user_name, default_user_name)
+        self.assertIn(create_default_user_response.status_code, [400, 201])
+
+        # creating project for default user
+        default_user_project_name = "default_user_project"
+        default_user_dict = self.aux_find_user_by_user_name(default_user_name)
+        default_user_auth = self.aux_get_user_authorization(default_user_name, default_user_name)
+        create_project_response = self.aux_create_project_for_user(default_user_project_name, default_user_dict["id"],
+                                                                   default_user_auth)
+        self.assertIn(create_project_response.status_code, [201, 400])
+
+        project_dict = self.aux_find_project_by_name(default_user_project_name)
+        response = requests.delete(self.url_project_list + str(project_dict["id"]), headers={"Authorization": INVALID_AUTH})
         self.assertEquals(response.status_code, 401)
 
     def test_delete_default_user_project_with_default_user_token_self_project(self):
-        response = requests.delete(self.url_project_list + str(self.aux_get_default_user_project_dict()["id"]),
-                                   headers={"Authorization": self.aux_get_default_user_authorization()})
-        self.assertEquals(response.status_code, 204)
+        default_user_name = "default_user_to_delete_project"
+        create_default_user_response = self.aux_create_user(default_user_name, default_user_name)
+        self.assertIn(create_default_user_response.status_code, [400, 201])
 
-        #restoring task
-        restore_response = self.aux_create_project_to_default_user()
-        self.assertEquals(restore_response.status_code, 201)
+        # creating project for default user
+        default_user_project_name = "default_user_project"
+        default_user_dict = self.aux_find_user_by_user_name(default_user_name)
+        default_user_auth = self.aux_get_user_authorization(default_user_name, default_user_name)
+        create_project_response = self.aux_create_project_for_user(default_user_project_name, default_user_dict["id"],
+                                                                   default_user_auth)
+        self.assertIn(create_project_response.status_code, [201, 400])
+
+        project_dict = self.aux_find_project_by_name(default_user_project_name)
+        response = requests.delete(self.url_project_list + str(project_dict["id"]),
+                                   headers={"Authorization": default_user_auth})
+        self.assertEquals(response.status_code, 204)
 
     def test_delete_default_user_project_with_default_user_token_another_user_project(self):
         '''
         Alternative dafault user trying to delete dafault user project
         '''
-        response = requests.delete(self.url_project_list + str(self.aux_get_default_user_project_dict()["id"]),
-                                   headers={"Authorization": self.aux_get_alternative_user_authorization()})
+        # creating default user
+        default_user_name = "default_user_to_delete_project"
+        create_default_user_response = self.aux_create_user(default_user_name, default_user_name)
+        self.assertIn(create_default_user_response.status_code, [400, 201])
+
+        # creating alternative user
+        alternative_user_name = "alternative_user_to_delete_project"
+        create_alternative_user_response = self.aux_create_user(alternative_user_name, alternative_user_name)
+        self.assertIn(create_alternative_user_response.status_code, [400, 201])
+
+        # creating project for default user
+        alternative_user_project_name = "alternative_user_project"
+        alternative_user_dict = self.aux_find_user_by_user_name(alternative_user_name)
+        alternative_user_auth = self.aux_get_user_authorization(alternative_user_name, alternative_user_name)
+        create_project_response = self.aux_create_project_for_user(alternative_user_project_name, alternative_user_dict["id"],
+                                                                   alternative_user_auth)
+        self.assertIn(create_project_response.status_code, [201, 400])
+
+        project_dict = self.aux_find_project_by_name(alternative_user_project_name)
+        default_user_auth = self.aux_get_user_authorization(default_user_name, default_user_name)
+        response = requests.delete(self.url_project_list + str(project_dict["id"]), headers={"Authorization": default_user_auth})
         self.assertEquals(response.status_code, 401)
 
     def test_delete_default_user_project_with_admin_user_token(self):
         '''
         Admin dafault user trying to delete dafault user task
         '''
-        response = requests.delete(self.url_project_list + str(self.aux_get_default_user_project_dict()["id"]),
-                                   headers={"Authorization": self.aux_get_admin_user_authorization()})
-        self.assertEquals(response.status_code, 204)
+        # creating default user
+        default_user_name = "default_user_to_delete_project"
+        create_default_user_response = self.aux_create_user(default_user_name, default_user_name)
+        self.assertIn(create_default_user_response.status_code, [400, 201])
 
-        #restoring project
-        restore_response = self.aux_create_project_to_default_user()
-        self.assertEquals(restore_response.status_code, 201)
+        # creating admin user
+        admin_user_name = "admin_user_to_delete_project"
+        create_admin_user_response = self.aux_create_user(admin_user_name, admin_user_name, is_admin=True)
+        self.assertIn(create_admin_user_response.status_code, [400, 201])
+
+        # creating project for default user
+        default_user_project_name = "default_user_project"
+        default_user_dict = self.aux_find_user_by_user_name(default_user_name)
+        default_user_auth = self.aux_get_user_authorization(default_user_name, default_user_name)
+        create_project_response = self.aux_create_project_for_user(default_user_project_name, default_user_dict["id"],
+                                                                   default_user_auth)
+        self.assertIn(create_project_response.status_code, [201, 400])
+
+        project_dict = self.aux_find_project_by_name(default_user_project_name)
+        admin_user_auth = self.aux_get_user_authorization(admin_user_name, admin_user_name)
+        response = requests.delete(self.url_project_list + str(project_dict["id"]),
+                                   headers={"Authorization": admin_user_auth})
+        self.assertEquals(response.status_code, 204)
 
 
     def test_delete_admin_user_project_without_token(self):
-        response = requests.delete(self.url_project_list + str(self.aux_get_admin_project_dict()["id"]))
+        admin_user_name = "admin_user_to_delete_project"
+        create_admin_user_response = self.aux_create_user(admin_user_name, admin_user_name, is_admin=True)
+        self.assertIn(create_admin_user_response.status_code, [400, 201])
+
+        # creating project for admin user
+        admin_user_project_name = "admin_user_project"
+        admin_user_dict = self.aux_find_user_by_user_name(admin_user_name)
+        admin_user_auth = self.aux_get_user_authorization(admin_user_name, admin_user_name)
+        create_project_response = self.aux_create_project_for_user(admin_user_project_name, admin_user_dict["id"],
+                                                                   admin_user_auth)
+        self.assertIn(create_project_response.status_code, [201, 400])
+
+        project_dict = self.aux_find_project_by_name(admin_user_project_name)
+        response = requests.delete(self.url_project_list + str(project_dict["id"]))
         self.assertEquals(response.status_code, 401)
 
     def test_delete_admin_user_project_with_invalid_token(self):
-        response = requests.delete(self.url_project_list + str(self.aux_get_admin_project_dict()["id"]),
-                                   headers={"Authorization": INVALID_AUTH})
+        admin_user_name = "admin_user_to_delete_project"
+        create_admin_user_response = self.aux_create_user(admin_user_name, admin_user_name, is_admin=True)
+        self.assertIn(create_admin_user_response.status_code, [400, 201])
+
+        # creating project for admin user
+        admin_user_project_name = "admin_user_project"
+        admin_user_dict = self.aux_find_user_by_user_name(admin_user_name)
+        admin_user_auth = self.aux_get_user_authorization(admin_user_name, admin_user_name)
+        create_project_response = self.aux_create_project_for_user(admin_user_project_name, admin_user_dict["id"],
+                                                                   admin_user_auth)
+        self.assertIn(create_project_response.status_code, [201, 400])
+
+        project_dict = self.aux_find_project_by_name(admin_user_project_name)
+        response = requests.delete(self.url_project_list + str(project_dict["id"]), headers={"Authorization": INVALID_AUTH})
         self.assertEquals(response.status_code, 401)
 
     def test_delete_admin_user_project_with_default_user_token(self):
         '''
         Default user trying to delete admin task
         '''
-        response = requests.delete(self.url_project_list + str(self.aux_get_admin_project_dict()["id"]),
-                                   headers={"Authorization": self.aux_get_default_user_authorization()})
+        admin_user_name = "admin_user_to_delete_project"
+        create_admin_user_response = self.aux_create_user(admin_user_name, admin_user_name, is_admin=True)
+        self.assertIn(create_admin_user_response.status_code, [400, 201])
+
+        default_user_name = "default_user_to_delete_project"
+        create_defaut_user_response = self.aux_create_user(default_user_name, default_user_name)
+        self.assertIn(create_defaut_user_response.status_code, [400, 201])
+
+        # creating project for admin user
+        admin_user_project_name = "admin_user_project"
+        admin_user_dict = self.aux_find_user_by_user_name(admin_user_name)
+        admin_user_auth = self.aux_get_user_authorization(admin_user_name, admin_user_name)
+        create_project_response = self.aux_create_project_for_user(admin_user_project_name, admin_user_dict["id"],
+                                                                   admin_user_auth)
+        self.assertIn(create_project_response.status_code, [201, 400])
+
+        project_dict = self.aux_find_project_by_name(admin_user_project_name)
+        default_user_auth = self.aux_get_user_authorization(default_user_name, default_user_name)
+        response = requests.delete(self.url_project_list + str(project_dict["id"]), headers={"Authorization": default_user_auth})
         self.assertEquals(response.status_code, 401)
 
     def test_delete_admin_user_project_with_admin_user_token_self_project(self):
-        response = requests.delete(self.url_project_list + str(self.aux_get_admin_project_dict()["id"]),
-                                   headers={"Authorization": self.aux_get_admin_user_authorization()})
-        self.assertEquals(response.status_code, 204)
+        admin_user_name = "admin_user_to_delete_project"
+        create_admin_user_response = self.aux_create_user(admin_user_name, admin_user_name, is_admin=True)
+        self.assertIn(create_admin_user_response.status_code, [400, 201])
 
-        restore_response = self.aux_create_project_to_admin_user()
-        self.assertEquals(restore_response.status_code, 201)
+        # creating project for admin user
+        admin_user_project_name = "admin_user_project"
+        admin_user_dict = self.aux_find_user_by_user_name(admin_user_name)
+        admin_user_auth = self.aux_get_user_authorization(admin_user_name, admin_user_name)
+        create_project_response = self.aux_create_project_for_user(admin_user_project_name, admin_user_dict["id"],
+                                                                   admin_user_auth)
+        self.assertIn(create_project_response.status_code, [201, 400])
+
+        project_dict = self.aux_find_project_by_name(admin_user_project_name)
+        response = requests.delete(self.url_project_list + str(project_dict["id"]), headers={"Authorization": admin_user_auth})
+        self.assertEquals(response.status_code, 204)
 
     def test_delete_admin_user_project_with_admin_user_token_another_admin_project(self):
         '''
         Alternative admin user trying to delete admin project
         '''
-        response = requests.delete(self.url_project_list + str(self.aux_get_admin_project_dict()["id"]),
-                                   headers={"Authorization": self.aux_get_alternative_admin_user_authorization()})
-        self.assertEquals(response.status_code, 204)
+        admin_user_name = "admin_user_to_delete_project"
+        create_admin_user_response = self.aux_create_user(admin_user_name, admin_user_name, is_admin=True)
+        self.assertIn(create_admin_user_response.status_code, [400, 201])
 
-        restore_response = self.aux_create_project_to_admin_user()
-        self.assertEquals(restore_response.status_code, 201)
+        alternative_admin_user_name = "alternative_admin_user_to_delete_project"
+        create_alternative_admin_user_response = self.aux_create_user(alternative_admin_user_name, alternative_admin_user_name, is_admin=True)
+        self.assertIn(create_alternative_admin_user_response.status_code, [400, 201])
 
+        # creating project for admin user
+        alternative_admin_user_project_name = "alternative_admin_user_project"
+        alternative_admin_user_dict = self.aux_find_user_by_user_name(alternative_admin_user_name)
+        alternative_admin_user_auth = self.aux_get_user_authorization(alternative_admin_user_name, alternative_admin_user_name)
+        create_project_response = self.aux_create_project_for_user(alternative_admin_user_project_name, alternative_admin_user_dict["id"],
+                                                                   alternative_admin_user_auth)
+        self.assertIn(create_project_response.status_code, [201, 400])
+
+        project_dict = self.aux_find_project_by_name(alternative_admin_user_project_name)
+        admin_user_auth = self.aux_get_user_authorization(admin_user_name, admin_user_name)
+        response = requests.delete(self.url_project_list + str(project_dict["id"]),
+                                   headers={"Authorization": admin_user_auth})
+        self.assertEquals(response.status_code, 401)
 
 class ImpedimentsListTest(KanbanTest):
 
@@ -1689,39 +1678,1477 @@ class SprintListTest(KanbanTest):
         pass
 
 
+#python manage.py test scrum.tests.SprintDetailTest --testrunner=scrum.tests.NoDbTestRunner
 class SprintDetailTest(KanbanTest):
     def setUp(self):
-        super(SimpleTestCase, self).setUp()
-        pass
+        self.url_sprint_list = HOST + "/scrum-list/sprint-list/"
+
+    def aux_create_sprint_for_user(self, sprint_name, responsible_id, responsible_auth):
+        data = {
+            "code": sprint_name,
+            "responsible": HOST + "/scrum-list/user-list/" + str(responsible_id)
+        }
+        return requests.post(self.url_sprint_list, json.dumps(data),
+                             headers={"Authorization": responsible_auth, "Content-Type": "application/json"})
+
+    def aux_find_sprint_by_name(self, sprint_name):
+        response = requests.get(HOST + "/scrum-list/sprint-list/filter/code/eq/" + sprint_name, headers={"Authorization": ADMIN_AUTH})
+        return json.loads( response.text )[0]
+
+    def aux_alter_sprint_responsible(self, sprint_dict, new_responsible):
+        responsible_url = "/".join( self.aux_remove_last_slash(sprint_dict["responsible"]).split("/")[:-1] )
+        new_responsible_url = responsible_url + "/" + str(new_responsible["id"])
+        sprint_dict["responsible"] = new_responsible_url
+        return sprint_dict
+
+    '''
+    {
+        "id_sprint": 7,
+        "code": "sprint de teste",
+        "start": "2019-04-11",
+        "end": "2019-04-11",
+        "project": null,
+        "responsible": "http://127.0.0.1/scrum-list/user-list/445"
+    }
+    '''
 
 
-    def test_alter_sprint_responsible_from_default_user_to_admin_user_without_token(self):
-        pass
+    def test_set_sprint_from_default_user_to_admin_without_token(self):
+        # creating default user
+        default_user_name = "default_user_to_alter_task"
+        create_user_response = self.aux_create_user(default_user_name, default_user_name)
+        self.assertIn(create_user_response.status_code, [201, 400])
 
-    def test_alter_sprint_responsible_from_default_user_to_admin_user_with_invalid_token(self):
-        pass
+        # creating sprint for default user
+        default_sprint_name = "default_user_sprint_to_alter"
+        default_user_dict = self.aux_find_user_by_user_name(default_user_name)
+        default_user_auth = self.aux_get_user_authorization(default_user_name, default_user_name)
+        create_sprint_response = self.aux_create_sprint_for_user(default_sprint_name, default_user_dict["id"], default_user_auth)
+        self.assertIn(create_sprint_response.status_code, [201, 400])
 
-    def test_alter_sprint_responsible_from_default_user_to_admin_user_with_default_user_token(self):
-        pass
+        # creating admin user
+        admin_user_name = "admin_user_to_alter_task"
+        create_admin_response = self.aux_create_user(admin_user_name, admin_user_name, is_admin=True)
+        self.assertIn(create_admin_response.status_code, [201, 400])
 
-    def test_alter_sprint_responsible_from_default_user_to_alternative_user_with_default_user_token(self):
-        pass
+        # changing responsible from default user to admin user
+        sprint_dict = self.aux_find_sprint_by_name(default_sprint_name)
+        new_responsible = self.aux_find_user_by_user_name(admin_user_name)
+        updated_sprint = self.aux_alter_sprint_responsible(sprint_dict, new_responsible)
+        response = requests.put(self.url_sprint_list + str(sprint_dict["id_sprint"]), json.dumps(updated_sprint))
+        self.assertEquals(response.status_code, 401)
 
-    def test_alter_sprint_responsible_from_default_user_to_admin_user_with_admin_token(self):
-        pass
+    def test_set_sprint_from_default_user_to_admin_invalid_token(self):
+        # creating default user
+        default_user_name = "default_user_to_alter_task"
+        create_user_response = self.aux_create_user(default_user_name, default_user_name)
+        self.assertIn(create_user_response.status_code, [201, 400])
+
+        # creating sprint for default user
+        default_sprint_name = "default_user_sprint_to_alter"
+        default_user_dict = self.aux_find_user_by_user_name(default_user_name)
+        default_user_auth = self.aux_get_user_authorization(default_user_name, default_user_name)
+        create_sprint_response = self.aux_create_sprint_for_user(default_sprint_name, default_user_dict["id"],
+                                                                 default_user_auth)
+        self.assertIn(create_sprint_response.status_code, [201, 400])
+
+        # creating admin user
+        admin_user_name = "admin_user_to_alter_task"
+        create_admin_response = self.aux_create_user(admin_user_name, admin_user_name, is_admin=True)
+        self.assertIn(create_admin_response.status_code, [201, 400])
+
+        # changing responsible from default user to admin user
+        sprint_dict = self.aux_find_sprint_by_name(default_sprint_name)
+        new_responsible = self.aux_find_user_by_user_name(admin_user_name)
+        updated_sprint = self.aux_alter_sprint_responsible(sprint_dict, new_responsible)
+        response = requests.put(self.url_sprint_list + str(sprint_dict["id_sprint"]), json.dumps(updated_sprint), headers={"Authorization": INVALID_AUTH})
+        self.assertEquals(response.status_code, 401)
+
+    def test_set_sprint_from_default_user_to_admin_with_default_user_token(self):
+        # creating default user
+        default_user_name = "default_user_to_alter_task"
+        create_user_response = self.aux_create_user(default_user_name, default_user_name)
+        self.assertIn(create_user_response.status_code, [201, 400])
+
+        # creating sprint for default user
+        default_sprint_name = "default_user_sprint_to_alter"
+        default_user_dict = self.aux_find_user_by_user_name(default_user_name)
+        default_user_auth = self.aux_get_user_authorization(default_user_name, default_user_name)
+        create_sprint_response = self.aux_create_sprint_for_user(default_sprint_name, default_user_dict["id"],
+                                                                 default_user_auth)
+        self.assertIn(create_sprint_response.status_code, [201, 400])
+
+        # creating admin user
+        admin_user_name = "admin_user_to_alter_task"
+        create_admin_response = self.aux_create_user(admin_user_name, admin_user_name, is_admin=True)
+        self.assertIn(create_admin_response.status_code, [201, 400])
+
+        # changing responsible from default user to admin user
+        sprint_dict = self.aux_find_sprint_by_name(default_sprint_name)
+        new_responsible = self.aux_find_user_by_user_name(admin_user_name)
+        updated_sprint = self.aux_alter_sprint_responsible(sprint_dict, new_responsible)
+        response = requests.put(self.url_sprint_list + str(sprint_dict["id_sprint"]), json.dumps(updated_sprint),
+                                headers={"Authorization": default_user_auth})
+        self.assertEquals(response.status_code, 401)
+
+    def test_set_sprint_from_default_user_to_another_user_with_default_user_token(self):
+        # creating default user
+        default_user_name = "default_user_to_alter_task"
+        create_user_response = self.aux_create_user(default_user_name, default_user_name)
+        self.assertIn(create_user_response.status_code, [201, 400])
+
+        # creating sprint for default user
+        default_sprint_name = "default_user_sprint_to_alter"
+        default_user_dict = self.aux_find_user_by_user_name(default_user_name)
+        default_user_auth = self.aux_get_user_authorization(default_user_name, default_user_name)
+        create_sprint_response = self.aux_create_sprint_for_user(default_sprint_name, default_user_dict["id"],
+                                                                 default_user_auth)
+        self.assertIn(create_sprint_response.status_code, [201, 400])
+
+        # creating alternative user
+        alternative_user_name = "alternative_user_to_alter_task"
+        create_alternative_user_response = self.aux_create_user(alternative_user_name, alternative_user_name)
+        self.assertIn(create_alternative_user_response.status_code, [201, 400])
+
+        # changing responsible from default user to admin user
+        sprint_dict = self.aux_find_sprint_by_name(default_sprint_name)
+        new_responsible = self.aux_find_user_by_user_name(alternative_user_name)
+        updated_sprint = self.aux_alter_sprint_responsible(sprint_dict, new_responsible)
+        response = requests.put(self.url_sprint_list + str(sprint_dict["id_sprint"]), json.dumps(updated_sprint),
+                                headers={"Authorization": default_user_auth})
+        self.assertEquals(response.status_code, 401)
+
+    def test_set_sprint_from_default_user_to_admin_with_admin_user_token(self):
+        # creating default user
+        default_user_name = "default_user_to_alter_task"
+        create_user_response = self.aux_create_user(default_user_name, default_user_name)
+        self.assertIn(create_user_response.status_code, [201, 400])
+
+        # creating sprint for default user
+        default_sprint_name = "default_user_sprint_to_alter"
+        default_user_dict = self.aux_find_user_by_user_name(default_user_name)
+        default_user_auth = self.aux_get_user_authorization(default_user_name, default_user_name)
+        create_sprint_response = self.aux_create_sprint_for_user(default_sprint_name, default_user_dict["id"],
+                                                                 default_user_auth)
+        self.assertIn(create_sprint_response.status_code, [201, 400])
+
+        # creating admin user
+        admin_user_name = "admin_user_to_alter_task"
+        create_admin_response = self.aux_create_user(admin_user_name, admin_user_name, is_admin=True)
+        self.assertIn(create_admin_response.status_code, [201, 400])
+
+        # changing responsible from default user to admin user
+        sprint_dict = self.aux_find_sprint_by_name(default_sprint_name)
+        new_responsible = self.aux_find_user_by_user_name(admin_user_name)
+        updated_sprint = self.aux_alter_sprint_responsible(sprint_dict, new_responsible)
+        admin_user_auth = self.aux_get_user_authorization(admin_user_name, admin_user_name)
+        response = requests.put(self.url_sprint_list + str(sprint_dict["id_sprint"]), json.dumps(updated_sprint),
+                                headers={"Authorization": admin_user_auth})
+        self.assertEquals(response.status_code, 204)
+
+        # restoring sprint
+        current_sprint_dict = self.aux_find_sprint_by_name(default_sprint_name)
+        old_responsible = self.aux_find_user_by_user_name(admin_user_name)
+        restored_sprint = self.aux_alter_sprint_responsible(current_sprint_dict, old_responsible)
+        restore_response = requests.put(self.url_sprint_list + str(restored_sprint["id_sprint"]), json.dumps(restored_sprint),
+                                headers={"Authorization": admin_user_auth})
+        self.assertEquals(restore_response, 204)
 
 
-    def test_alter_sprint_responsible_from_admin_user_to_default_user_without_token(self):
-        pass
+    def test_set_sprint_from_admin_user_to_default_user_without_token(self):
+        # creating admin user
+        admin_user_name = "admin_user_to_alter_task"
+        create_admin_response = self.aux_create_user(admin_user_name, admin_user_name, is_admin=True)
+        self.assertIn(create_admin_response.status_code, [201, 400])
 
-    def test_alter_sprint_responsible_from_admin_user_to_default_user_with_invalid_token(self):
-        pass
+        # creating sprint for admin user
+        admin_sprint_name = "admin_user_sprint_to_alter"
+        admin_user_dict = self.aux_find_user_by_user_name(admin_user_name)
+        admin_user_auth = self.aux_get_user_authorization(admin_user_name, admin_user_name)
+        create_sprint_response = self.aux_create_sprint_for_user(admin_sprint_name, admin_user_dict["id"],
+                                                                 admin_user_auth)
+        self.assertIn(create_sprint_response.status_code, [201, 400])
 
-    def test_alter_sprint_responsible_from_admin_user_to_default_user_with_default_token(self):
-        pass
+        # creating default user
+        default_user_name = "default_user_to_alter_task"
+        create_user_response = self.aux_create_user(default_user_name, default_user_name)
+        self.assertIn(create_user_response.status_code, [201, 400])
 
-    def test_alter_sprint_responsible_from_admin_user_to_another_admin_user_with_another_admin_token(self):
+        # changing responsible from admin user to default user
+        sprint_dict = self.aux_find_sprint_by_name(admin_sprint_name)
+        new_responsible = self.aux_find_user_by_user_name(default_user_name)
+        updated_sprint = self.aux_alter_sprint_responsible(sprint_dict, new_responsible)
+        response = requests.put(self.url_sprint_list + str(sprint_dict["id_sprint"]), json.dumps(updated_sprint))
+        self.assertEquals(response.status_code, 401)
+
+    def test_set_sprint_from_admin_user_to_default_user_with_invalid_token(self):
+        # creating admin user
+        admin_user_name = "admin_user_to_alter_task"
+        create_admin_response = self.aux_create_user(admin_user_name, admin_user_name, is_admin=True)
+        self.assertIn(create_admin_response.status_code, [201, 400])
+
+        # creating sprint for admin user
+        admin_sprint_name = "admin_user_sprint_to_alter"
+        admin_user_dict = self.aux_find_user_by_user_name(admin_user_name)
+        admin_user_auth = self.aux_get_user_authorization(admin_user_name, admin_user_name)
+        create_sprint_response = self.aux_create_sprint_for_user(admin_sprint_name, admin_user_dict["id"],
+                                                                 admin_user_auth)
+        self.assertIn(create_sprint_response.status_code, [201, 400])
+
+        # creating default user
+        default_user_name = "default_user_to_alter_task"
+        create_user_response = self.aux_create_user(default_user_name, default_user_name)
+        self.assertIn(create_user_response.status_code, [201, 400])
+
+        # changing responsible from admin user to default user
+        sprint_dict = self.aux_find_sprint_by_name(admin_sprint_name)
+        new_responsible = self.aux_find_user_by_user_name(default_user_name)
+        updated_sprint = self.aux_alter_sprint_responsible(sprint_dict, new_responsible)
+        response = requests.put(self.url_sprint_list + str(sprint_dict["id_sprint"]), json.dumps(updated_sprint), headers={"Authorization": INVALID_AUTH})
+        self.assertEquals(response.status_code, 401)
+
+    def test_set_sprint_from_admin_user_to_default_user_with_default_user_token(self):
+        # creating admin user
+        admin_user_name = "admin_user_to_alter_task"
+        create_admin_response = self.aux_create_user(admin_user_name, admin_user_name, is_admin=True)
+        self.assertIn(create_admin_response.status_code, [201, 400])
+
+        # creating sprint for admin user
+        admin_sprint_name = "admin_user_sprint_to_alter"
+        admin_user_dict = self.aux_find_user_by_user_name(admin_user_name)
+        admin_user_auth = self.aux_get_user_authorization(admin_user_name, admin_user_name)
+        create_sprint_response = self.aux_create_sprint_for_user(admin_sprint_name, admin_user_dict["id"],
+                                                                 admin_user_auth)
+        self.assertIn(create_sprint_response.status_code, [201, 400])
+
+        # creating default user
+        default_user_name = "default_user_to_alter_task"
+        create_user_response = self.aux_create_user(default_user_name, default_user_name)
+        self.assertIn(create_user_response.status_code, [201, 400])
+
+        # changing responsible from admin user to default user
+        sprint_dict = self.aux_find_sprint_by_name(admin_sprint_name)
+        new_responsible = self.aux_find_user_by_user_name(default_user_name)
+        updated_sprint = self.aux_alter_sprint_responsible(sprint_dict, new_responsible)
+        default_user_auth = self.aux_get_user_authorization(default_user_name, default_user_name)
+        response = requests.put(self.url_sprint_list + str(sprint_dict["id_sprint"]), json.dumps(updated_sprint),
+                                headers={"Authorization": default_user_auth})
+        self.assertEquals(response.status_code, 401)
+
+    def test_set_sprint_from_admin_user_to_another_admin_user_with_admin_user_token(self):
+        # creating admin user
+        admin_user_name = "admin_user_to_alter_task"
+        create_admin_response = self.aux_create_user(admin_user_name, admin_user_name, is_admin=True)
+        self.assertIn(create_admin_response.status_code, [201, 400])
+
+        # creating sprint for admin user
+        admin_sprint_name = "admin_user_sprint_to_alter"
+        admin_user_dict = self.aux_find_user_by_user_name(admin_user_name)
+        admin_user_auth = self.aux_get_user_authorization(admin_user_name, admin_user_name)
+        create_sprint_response = self.aux_create_sprint_for_user(admin_sprint_name, admin_user_dict["id"],
+                                                                 admin_user_auth)
+        self.assertIn(create_sprint_response.status_code, [201, 400])
+
+        # creating default user
+        default_user_name = "default_user_to_alter_task"
+        create_user_response = self.aux_create_user(default_user_name, default_user_name)
+        self.assertIn(create_user_response.status_code, [201, 400])
+
+        # changing responsible from admin user to default user
+        sprint_dict = self.aux_find_sprint_by_name(admin_sprint_name)
+        new_responsible = self.aux_find_user_by_user_name(default_user_name)
+        updated_sprint = self.aux_alter_sprint_responsible(sprint_dict, new_responsible)
+        response = requests.put(self.url_sprint_list + str(sprint_dict["id_sprint"]), json.dumps(updated_sprint),
+                                headers={"Authorization": admin_user_auth})
+        self.assertEquals(response.status_code, 204)
+
+        # restoring sprint
+        current_sprint_dict = self.aux_find_sprint_by_name(admin_sprint_name)
+        old_responsible = self.aux_find_user_by_user_name(admin_user_name)
+        restored_sprint = self.aux_alter_sprint_responsible(current_sprint_dict, old_responsible)
+        restore_response = requests.put(self.url_sprint_list + str(restored_sprint["id_sprint"]), json.dumps(restored_sprint),
+                                headers={"Authorization": admin_user_auth})
+        self.assertEquals(restore_response.status_code, 204)
+
+
+    def test_delete_default_user_sprint_without_token(self):
+        # creating default user
+        default_user_name = "default_user_to_test_sprint"
+        create_user_response = self.aux_create_user(default_user_name, default_user_name)
+        self.assertIn(create_user_response.status_code, [201, 400])
+
+        # creating sprint for default user
+        default_sprint_name = "default_user_sprint"
+        default_user_dict = self.aux_find_user_by_user_name(default_user_name)
+        default_user_auth = self.aux_get_user_authorization(default_user_name, default_user_name)
+        create_sprint_response = self.aux_create_sprint_for_user(default_sprint_name, default_user_dict["id"], default_user_auth)
+        self.assertIn(create_sprint_response.status_code, [201, 400])
+
+        sprint_dict = self.aux_find_sprint_by_name(default_sprint_name)
+        response = requests.delete(self.url_sprint_list + str(sprint_dict["id_sprint"]))
+        self.assertEquals(response.status_code, 401)
+
+    def test_delete_default_user_sprint_with_invalid_token(self):
+        # creating default user
+        default_user_name = "default_user_to_test_sprint"
+        create_user_response = self.aux_create_user(default_user_name, default_user_name)
+        self.assertIn(create_user_response.status_code, [201, 400])
+
+        # creating sprint for default user
+        default_sprint_name = "default_user_sprint"
+        default_user_dict = self.aux_find_user_by_user_name(default_user_name)
+        default_user_auth = self.aux_get_user_authorization(default_user_name, default_user_name)
+        create_sprint_response = self.aux_create_sprint_for_user(default_sprint_name, default_user_dict["id"],
+                                                                 default_user_auth)
+        self.assertIn(create_sprint_response.status_code, [201, 400])
+
+        sprint_dict = self.aux_find_sprint_by_name(default_sprint_name)
+        response = requests.delete(self.url_sprint_list + str(sprint_dict["id_sprint"]), headers={"Authorization": INVALID_AUTH})
+        self.assertEquals(response.status_code, 401)
+
+    def test_delete_default_user_sprint_with_default_user_token_self_sprint(self):
+        # creating default user
+        default_user_name = "default_user_to_test_sprint"
+        create_user_response = self.aux_create_user(default_user_name, default_user_name)
+        self.assertIn(create_user_response.status_code, [201, 400])
+
+        # creating sprint for default user
+        default_sprint_name = "default_user_sprint"
+        default_user_dict = self.aux_find_user_by_user_name(default_user_name)
+        default_user_auth = self.aux_get_user_authorization(default_user_name, default_user_name)
+        create_sprint_response = self.aux_create_sprint_for_user(default_sprint_name, default_user_dict["id"],
+                                                                 default_user_auth)
+        self.assertIn(create_sprint_response.status_code, [201, 400])
+
+        sprint_dict = self.aux_find_sprint_by_name(default_sprint_name)
+        response = requests.delete(self.url_sprint_list + str(sprint_dict["id_sprint"]),
+                                   headers={"Authorization": default_user_auth})
+        self.assertEquals(response.status_code, 204)
+
+    def test_delete_default_user_sprint_with_default_user_token_another_user_sprint(self):
         '''
-        Changing sprint responsible from admin to another admin
+        Alternative dafault user trying to delete dafault user task
         '''
-        pass
+        # creating default user
+        default_user_name = "default_user_to_test_sprint"
+        create_user_response = self.aux_create_user(default_user_name, default_user_name)
+        self.assertIn(create_user_response.status_code, [201, 400])
+
+        # creating alternative user sprint
+        alternative_user_name = "alternative_user_to_tests_sprint"
+        create_alternative_user_response = self.aux_create_user(alternative_user_name, alternative_user_name)
+        self.assertIn(create_alternative_user_response.status_code, [201, 400])
+
+
+        # creating sprint for alternative user
+        alternative_sprint_name = "alternative_user_sprint"
+        alternative_user_dict = self.aux_find_user_by_user_name(alternative_user_name)
+        alternative_user_auth = self.aux_get_user_authorization(alternative_user_name, alternative_user_name)
+        create_sprint_response = self.aux_create_sprint_for_user(alternative_sprint_name, alternative_user_dict["id"],
+                                                                 alternative_user_auth)
+        self.assertIn(create_sprint_response.status_code, [201, 400])
+
+        sprint_dict = self.aux_find_sprint_by_name(alternative_sprint_name)
+        default_user_auth = self.aux_get_user_authorization(alternative_user_name, alternative_user_name)
+        response = requests.delete(self.url_sprint_list + str(sprint_dict["id_sprint"]),
+                                   headers={"Authorization": default_user_auth})
+        self.assertEquals(response.status_code, 401)
+
+    def test_delete_default_user_sprint_with_admin_user_token(self):
+        '''
+        Admin dafault user trying to delete dafault user task
+        '''
+        # creating default user
+        default_user_name = "default_user_to_test_sprint"
+        create_user_response = self.aux_create_user(default_user_name, default_user_name)
+        self.assertIn(create_user_response.status_code, [201, 400])
+
+        # creating admin user sprint
+        admin_user_name = "admin_user_to_tests_sprint"
+        create_admin_user_response = self.aux_create_user(admin_user_name, admin_user_name, is_admin=True)
+        self.assertIn(create_admin_user_response.status_code, [201, 400])
+
+        # creating sprint for default user
+        default_sprint_name = "default_user_sprint"
+        default_user_dict = self.aux_find_user_by_user_name(default_user_name)
+        default_user_auth = self.aux_get_user_authorization(default_user_name, default_user_name)
+        create_sprint_response = self.aux_create_sprint_for_user(default_sprint_name, default_user_dict["id"],
+                                                                 default_user_auth)
+        self.assertIn(create_sprint_response.status_code, [201, 400])
+
+        sprint_dict = self.aux_find_sprint_by_name(default_sprint_name)
+        admin_user_auth = self.aux_get_user_authorization(admin_user_name, admin_user_name)
+        response = requests.delete(self.url_sprint_list + str(sprint_dict["id_sprint"]),
+                                   headers={"Authorization": admin_user_auth})
+        self.assertEquals(response.status_code, 204)
+
+
+    def test_delete_admin_user_sprint_without_token(self):
+        # creating admin user
+        admin_user_name = "admin_user_to_test_sprint"
+        create_admin_response = self.aux_create_user(admin_user_name, admin_user_name, is_admin=True)
+        self.assertIn(create_admin_response.status_code, [201, 400])
+
+        # creating sprint for admin user
+        admin_sprint_name = "admin_user_sprint"
+        admin_user_dict = self.aux_find_user_by_user_name(admin_user_name)
+        admin_user_auth = self.aux_get_user_authorization(admin_user_name, admin_user_name)
+        create_sprint_response = self.aux_create_sprint_for_user(admin_sprint_name, admin_user_dict["id"],
+                                                                 admin_user_auth)
+        self.assertIn(create_sprint_response.status_code, [201, 400])
+
+        sprint_dict = self.aux_find_sprint_by_name(admin_sprint_name)
+        response = requests.delete(self.url_sprint_list + str(sprint_dict["id_sprint"]))
+        self.assertEquals(response.status_code, 401)
+
+    def test_delete_admin_user_sprint_with_invalid_token(self):
+        # creating admin user
+        admin_user_name = "admin_user_to_test_sprint"
+        create_admin_response = self.aux_create_user(admin_user_name, admin_user_name, is_admin=True)
+        self.assertIn(create_admin_response.status_code, [201, 400])
+
+        # creating sprint for admin user
+        admin_sprint_name = "admin_user_sprint"
+        admin_user_dict = self.aux_find_user_by_user_name(admin_user_name)
+        admin_user_auth = self.aux_get_user_authorization(admin_user_name, admin_user_name)
+        create_sprint_response = self.aux_create_sprint_for_user(admin_sprint_name, admin_user_dict["id"],
+                                                                 admin_user_auth)
+        self.assertIn(create_sprint_response.status_code, [201, 400])
+
+        sprint_dict = self.aux_find_sprint_by_name(admin_sprint_name)
+        response = requests.delete(self.url_sprint_list + str(sprint_dict["id_sprint"]), headers={"Authorization": INVALID_AUTH})
+        self.assertEquals(response.status_code, 401)
+
+    def test_delete_admin_user_sprint_with_default_user_token(self):
+        """
+        Default user trying to delete admin task
+        """
+        # creating admin user
+        admin_user_name = "admin_user_to_test_sprint"
+        create_admin_response = self.aux_create_user(admin_user_name, admin_user_name, is_admin=True)
+        self.assertIn(create_admin_response.status_code, [201, 400])
+
+        # creating sprint for admin user
+        admin_sprint_name = "admin_user_sprint"
+        admin_user_dict = self.aux_find_user_by_user_name(admin_user_name)
+        admin_user_auth = self.aux_get_user_authorization(admin_user_name, admin_user_name)
+        create_sprint_response = self.aux_create_sprint_for_user(admin_sprint_name, admin_user_dict["id"],
+                                                                 admin_user_auth)
+        self.assertIn(create_sprint_response.status_code, [201, 400])
+
+        # creating default user
+        default_user_name = "default_user_to_test_sprint"
+        create_user_response = self.aux_create_user(default_user_name, default_user_name)
+        self.assertIn(create_user_response.status_code, [201, 400])
+
+        default_user_auth = self.aux_get_user_authorization(default_user_name, default_user_name)
+        sprint_dict = self.aux_find_sprint_by_name(admin_sprint_name)
+        response = requests.delete(self.url_sprint_list + str(sprint_dict["id_sprint"]),
+                                   headers={"Authorization": default_user_auth})
+        self.assertEquals(response.status_code, 401)
+
+    def test_delete_admin_user_sprint_with_admin_user_token_self_sprint(self):
+        # creating admin user
+        admin_user_name = "admin_user_to_test_sprint"
+        create_admin_response = self.aux_create_user(admin_user_name, admin_user_name, is_admin=True)
+        self.assertIn(create_admin_response.status_code, [201, 400])
+
+        # creating sprint for admin user
+        admin_sprint_name = "admin_user_sprint"
+        admin_user_dict = self.aux_find_user_by_user_name(admin_user_name)
+        admin_user_auth = self.aux_get_user_authorization(admin_user_name, admin_user_name)
+        create_sprint_response = self.aux_create_sprint_for_user(admin_sprint_name, admin_user_dict["id"],
+                                                                 admin_user_auth)
+        self.assertIn(create_sprint_response.status_code, [201, 400])
+
+        sprint_dict = self.aux_find_sprint_by_name(admin_sprint_name)
+        response = requests.delete(self.url_sprint_list + str(sprint_dict["id_sprint"]), headers={"Authorization": admin_user_auth})
+        self.assertEquals(response.status_code, 204)
+
+    def test_delete_admin_user_sprint_with_admin_user_token_another_admin_sprint(self):
+        """
+        Alternative admin user trying to delete admin task
+        """
+        # creating admin user
+        admin_user_name = "admin_user_to_test_sprint"
+        create_admin_response = self.aux_create_user(admin_user_name, admin_user_name, is_admin=True)
+        self.assertIn(create_admin_response.status_code, [201, 400])
+
+        # creating alternative admin user
+        alternative_admin_user_name = "alternative_admin_user_to_test_sprint"
+        create_alternative_admin_response = self.aux_create_user(alternative_admin_user_name, alternative_admin_user_name, is_admin=True)
+        self.assertIn(create_alternative_admin_response.status_code, [201, 400])
+
+        # creating sprint for admin user
+        alternative_admin_sprint_name = "alternative_admin_user_sprint"
+        alternative_admin_user_dict = self.aux_find_user_by_user_name(alternative_admin_user_name)
+        alternative_admin_user_auth = self.aux_get_user_authorization(alternative_admin_user_name, alternative_admin_user_name)
+        create_sprint_response = self.aux_create_sprint_for_user(alternative_admin_sprint_name, alternative_admin_user_dict["id"],
+                                                                 alternative_admin_user_auth)
+        self.assertIn(create_sprint_response.status_code, [201, 400])
+
+        admin_user_auth = self.aux_get_user_authorization(admin_user_name, admin_user_name)
+        sprint_dict = self.aux_find_sprint_by_name(alternative_admin_sprint_name)
+        response = requests.delete(self.url_sprint_list + str(sprint_dict["id_sprint"]),
+                                   headers={"Authorization": admin_user_auth})
+        self.assertEquals(response.status_code, 401)
+
+
+#python manage.py test scrum.tests.ImpedimentsDetailTest --testrunner=scrum.tests.NoDbTestRunner
+class ImpedimentsDetailTest(KanbanTest):
+    def setUp(self):
+        super(ImpedimentsDetailTest, self).setUp()
+        self.url_sprint_list = HOST + "/scrum-list/sprint-list/"
+        self.url_impediment_list = HOST + "/scrum-list/impediment-list/"
+        self.uri_task_list = HOST + "/scrum-list/task-list/"
+
+
+    def aux_create_task_for_user(self, task_name, responsible_id, responsible_auth):
+        data = {
+            "name": task_name,
+            "responsible": HOST + "/scrum-list/user-list/" + str(responsible_id)
+        }
+        return requests.post(self.uri_task_list, json.dumps(data),
+                             headers={"Authorization": responsible_auth, "Content-Type": "application/json"})
+
+    def aux_find_task_by_name(self, task_name):
+        response = requests.get(HOST + "/scrum-list/task-list/filter/name/eq/" + task_name, headers={"Authorization": ADMIN_AUTH})
+        return json.loads( response.text )[0]
+
+
+    def aux_create_sprint_for_user(self, sprint_name, responsible_id, responsible_auth):
+        data = {
+            "code": sprint_name,
+            "responsible": HOST + "/scrum-list/user-list/" + str(responsible_id)
+        }
+        return requests.post(self.url_sprint_list, json.dumps(data),
+                             headers={"Authorization": responsible_auth, "Content-Type": "application/json"})
+
+    def aux_find_sprint_by_name(self, sprint_name):
+        response = requests.get(HOST + "/scrum-list/sprint-list/filter/code/eq/" + sprint_name, headers={"Authorization": ADMIN_AUTH})
+        return json.loads( response.text )[0]
+
+
+    def aux_create_impediment_for_user(self, impediment_name, task_id, sprint_id, user_auth):
+        data = {
+            "name": impediment_name,
+            "sprint": HOST + "/scrum-list/sprint-list/" + str(sprint_id),
+            "task": HOST + "/scrum-list/task-list/" + str(task_id)
+        }
+        return requests.post(self.url_impediment_list, json.dumps(data),
+                             headers={"Authorization": user_auth, "Content-Type": "application/json"})
+
+    def aux_find_impediment_by_name(self, impediment_name):
+        response = requests.get(HOST + "/scrum-list/impediment-list/filter/name/eq/" + impediment_name, headers={"Authorization": ADMIN_AUTH})
+        return json.loads( response.text )[0]
+
+    def aux_alter_impediment_task(self, impediment_dict, task_dict):
+        task_url = "/".join( self.aux_remove_last_slash(impediment_dict["task"]).split("/")[:-1] )
+        new_task_url = task_url + "/" + str(task_dict["id"])
+        impediment_dict["task"] = new_task_url
+        return impediment_dict
+
+    def aux_alter_impediment_sprint(self, impediment_dict, sprint_dict):
+        sprint_url = "/".join( self.aux_remove_last_slash(impediment_dict["sprint"]).split("/")[:-1] )
+        new_sprint_url = sprint_url + "/" + str(sprint_dict["id_sprint"])
+        impediment_dict["sprint"] = new_sprint_url
+        return impediment_dict
+
+    '''
+    {
+        "id": 7,
+        "name": "sprint de teste",
+        "created_date": "2019-04-11",
+        "resolution_date": "2019-04-11",
+        "description": null,
+        "sprint": "http://127.0.0.1/scrum-list/sprint-list/445",
+        "task": "http://127.0.0.1/scrum-list/task-list/445"
+    }
+    '''
+
+    def test_set_impediment_from_default_user_to_admin_without_token(self):
+        # creating default user
+        default_user_name = "default_user_to_test_impediment"
+        create_user_response = self.aux_create_user(default_user_name, default_user_name)
+        self.assertIn(create_user_response.status_code, [201, 400])
+
+        # creating sprint for default user
+        default_sprint_name = "default_user_sprint"
+        default_user_dict = self.aux_find_user_by_user_name(default_user_name)
+        default_user_auth = self.aux_get_user_authorization(default_user_name, default_user_name)
+        create_sprint_response = self.aux_create_sprint_for_user(default_sprint_name, default_user_dict["id"],
+                                                                 default_user_auth)
+        self.assertIn(create_sprint_response.status_code, [201, 400])
+
+        # creating task for default user
+        default_task_name = 'default_user_task'
+        create_task_response = self.aux_create_task_for_user(default_task_name, default_user_dict["id"],
+                                                             default_user_auth)
+        self.assertIn(create_task_response.status_code, [201, 400])
+
+        impediment_name = "default_user_impediment"
+        default_task_dict = self.aux_find_task_by_name(default_task_name)
+        default_sprint_dict = self.aux_find_sprint_by_name(default_sprint_name)
+        create_impediment_response = self.aux_create_impediment_for_user(impediment_name, default_task_dict["id"],
+                                                                         default_sprint_dict["id_sprint"], default_user_auth)
+        self.assertIn(create_impediment_response.status_code, [201, 400])
+
+        # creating admin user
+        admin_user_name = "admin_user_to_alter_task"
+        create_admin_response = self.aux_create_user(admin_user_name, admin_user_name, is_admin=True)
+        self.assertIn(create_admin_response.status_code, [201, 400])
+
+        # creating sprint for admin user
+        admin_sprint_name = "admin_user_sprint"
+        admin_user_dict = self.aux_find_user_by_user_name(admin_user_name)
+        admin_user_auth = self.aux_get_user_authorization(admin_user_name, admin_user_name)
+        create_sprint_response = self.aux_create_sprint_for_user(admin_sprint_name, admin_user_dict["id"],
+                                                                 admin_user_auth)
+        self.assertIn(create_sprint_response.status_code, [201, 400])
+
+        # creating task for admin user
+        admin_task_name = 'admin_user_task'
+        create_task_response = self.aux_create_task_for_user(admin_task_name, admin_user_dict["id"],
+                                                             admin_user_auth)
+        self.assertIn(create_task_response.status_code, [201, 400])
+
+
+        # changing impediment from default user to admin user
+        impediment_dict = self.aux_find_impediment_by_name(impediment_name)
+        admin_task_dict = self.aux_find_task_by_name(admin_task_name)
+        admin_sprint_dict = self.aux_find_sprint_by_name(admin_sprint_name)
+
+        updated_impediment = self.aux_alter_impediment_task(impediment_dict, admin_task_dict)
+        updated_impediment = self.aux_alter_impediment_sprint(updated_impediment, admin_sprint_dict)
+
+        response = requests.put(self.url_impediment_list + str(impediment_dict["id"]), json.dumps(updated_impediment))
+        self.assertEquals(response.status_code, 401)
+
+    def test_set_impediment_from_default_user_to_admin_invalid_token(self):
+        # creating default user
+        default_user_name = "default_user_to_test_impediment"
+        create_user_response = self.aux_create_user(default_user_name, default_user_name)
+        self.assertIn(create_user_response.status_code, [201, 400])
+
+        # creating sprint for default user
+        default_sprint_name = "default_user_sprint"
+        default_user_dict = self.aux_find_user_by_user_name(default_user_name)
+        default_user_auth = self.aux_get_user_authorization(default_user_name, default_user_name)
+        create_sprint_response = self.aux_create_sprint_for_user(default_sprint_name, default_user_dict["id"],
+                                                                 default_user_auth)
+        self.assertIn(create_sprint_response.status_code, [201, 400])
+
+        # creating task for default user
+        default_task_name = 'default_user_task'
+        create_task_response = self.aux_create_task_for_user(default_task_name, default_user_dict["id"],
+                                                             default_user_auth)
+        self.assertIn(create_task_response.status_code, [201, 400])
+
+        impediment_name = "default_user_impediment"
+        default_task_dict = self.aux_find_task_by_name(default_task_name)
+        default_sprint_dict = self.aux_find_sprint_by_name(default_sprint_name)
+        create_impediment_response = self.aux_create_impediment_for_user(impediment_name, default_task_dict["id"],
+                                                                         default_sprint_dict["id_sprint"], default_user_auth)
+        self.assertIn(create_impediment_response.status_code, [201, 400])
+
+        # creating admin user
+        admin_user_name = "admin_user_to_alter_task"
+        create_admin_response = self.aux_create_user(admin_user_name, admin_user_name, is_admin=True)
+        self.assertIn(create_admin_response.status_code, [201, 400])
+
+        # creating sprint for admin user
+        admin_sprint_name = "admin_user_sprint"
+        admin_user_dict = self.aux_find_user_by_user_name(admin_user_name)
+        admin_user_auth = self.aux_get_user_authorization(admin_user_name, admin_user_name)
+        create_sprint_response = self.aux_create_sprint_for_user(admin_sprint_name, admin_user_dict["id"],
+                                                                 admin_user_auth)
+        self.assertIn(create_sprint_response.status_code, [201, 400])
+
+        # creating task for admin user
+        admin_task_name = 'admin_user_task'
+        create_task_response = self.aux_create_task_for_user(admin_task_name, admin_user_dict["id"],
+                                                             admin_user_auth)
+        self.assertIn(create_task_response.status_code, [201, 400])
+
+        # changing impediment from default user to admin user
+        impediment_dict = self.aux_find_impediment_by_name(impediment_name)
+        admin_task_dict = self.aux_find_task_by_name(admin_task_name)
+        admin_sprint_dict = self.aux_find_sprint_by_name(admin_sprint_name)
+
+        updated_impediment = self.aux_alter_impediment_task(impediment_dict, admin_task_dict)
+        updated_impediment = self.aux_alter_impediment_sprint(updated_impediment, admin_sprint_dict)
+
+        response = requests.put(self.url_impediment_list + str(impediment_dict["id"]), json.dumps(updated_impediment), headers={"Authorization": INVALID_AUTH})
+        self.assertEquals(response.status_code, 401)
+
+    def test_set_impediment_from_default_user_to_admin_with_default_user_token(self):
+        # creating default user
+        default_user_name = "default_user_to_test_impediment"
+        create_user_response = self.aux_create_user(default_user_name, default_user_name)
+        self.assertIn(create_user_response.status_code, [201, 400])
+
+        # creating sprint for default user
+        default_sprint_name = "default_user_sprint"
+        default_user_dict = self.aux_find_user_by_user_name(default_user_name)
+        default_user_auth = self.aux_get_user_authorization(default_user_name, default_user_name)
+        create_sprint_response = self.aux_create_sprint_for_user(default_sprint_name, default_user_dict["id"],
+                                                                 default_user_auth)
+        self.assertIn(create_sprint_response.status_code, [201, 400])
+
+        # creating task for default user
+        default_task_name = 'default_user_task'
+        create_task_response = self.aux_create_task_for_user(default_task_name, default_user_dict["id"],
+                                                             default_user_auth)
+        self.assertIn(create_task_response.status_code, [201, 400])
+
+        impediment_name = "default_user_impediment"
+        default_task_dict = self.aux_find_task_by_name(default_task_name)
+        default_sprint_dict = self.aux_find_sprint_by_name(default_sprint_name)
+        create_impediment_response = self.aux_create_impediment_for_user(impediment_name, default_task_dict["id"],
+                                                                         default_sprint_dict["id_sprint"], default_user_auth)
+        self.assertIn(create_impediment_response.status_code, [201, 400])
+
+        # creating admin user
+        admin_user_name = "admin_user_to_alter_task"
+        create_admin_response = self.aux_create_user(admin_user_name, admin_user_name, is_admin=True)
+        self.assertIn(create_admin_response.status_code, [201, 400])
+
+        # creating sprint for admin user
+        admin_sprint_name = "admin_user_sprint"
+        admin_user_dict = self.aux_find_user_by_user_name(admin_user_name)
+        admin_user_auth = self.aux_get_user_authorization(admin_user_name, admin_user_name)
+        create_sprint_response = self.aux_create_sprint_for_user(admin_sprint_name, admin_user_dict["id"],
+                                                                 admin_user_auth)
+        self.assertIn(create_sprint_response.status_code, [201, 400])
+
+        # creating task for admin user
+        admin_task_name = 'admin_user_task'
+        create_task_response = self.aux_create_task_for_user(admin_task_name, admin_user_dict["id"],
+                                                             admin_user_auth)
+        self.assertIn(create_task_response.status_code, [201, 400])
+
+        # changing impediment from default user to admin user
+        impediment_dict = self.aux_find_impediment_by_name(impediment_name)
+        admin_task_dict = self.aux_find_task_by_name(admin_task_name)
+        admin_sprint_dict = self.aux_find_sprint_by_name(admin_sprint_name)
+
+        updated_impediment = self.aux_alter_impediment_task(impediment_dict, admin_task_dict)
+        updated_impediment = self.aux_alter_impediment_sprint(updated_impediment, admin_sprint_dict)
+
+        response = requests.put(self.url_impediment_list + str(impediment_dict["id"]), json.dumps(updated_impediment),
+                                headers={"Authorization": default_user_auth})
+        self.assertEquals(response.status_code, 401)
+
+    def test_set_impediment_from_default_user_to_another_user_with_default_user_token(self):
+        # creating default user
+        default_user_name = "default_user_to_test_impediment"
+        create_user_response = self.aux_create_user(default_user_name, default_user_name)
+        self.assertIn(create_user_response.status_code, [201, 400])
+
+        # creating sprint for default user
+        default_sprint_name = "default_user_sprint"
+        default_user_dict = self.aux_find_user_by_user_name(default_user_name)
+        default_user_auth = self.aux_get_user_authorization(default_user_name, default_user_name)
+        create_sprint_response = self.aux_create_sprint_for_user(default_sprint_name, default_user_dict["id"],
+                                                                 default_user_auth)
+        self.assertIn(create_sprint_response.status_code, [201, 400])
+
+        # creating task for default user
+        default_task_name = 'default_user_task'
+        create_task_response = self.aux_create_task_for_user(default_task_name, default_user_dict["id"],
+                                                             default_user_auth)
+        self.assertIn(create_task_response.status_code, [201, 400])
+
+        impediment_name = "default_user_impediment"
+        default_task_dict = self.aux_find_task_by_name(default_task_name)
+        default_sprint_dict = self.aux_find_sprint_by_name(default_sprint_name)
+        create_impediment_response = self.aux_create_impediment_for_user(impediment_name, default_task_dict["id"],
+                                                                         default_sprint_dict["id_sprint"], default_user_auth)
+        self.assertIn(create_impediment_response.status_code, [201, 400])
+
+        # creating alternative user
+        alternative_user_name = "alternative_user_to_alter_task"
+        create_admin_response = self.aux_create_user(alternative_user_name, alternative_user_name)
+        self.assertIn(create_admin_response.status_code, [201, 400])
+
+        # creating sprint for alternative user
+        alternative_sprint_name = "alternative_user_sprint"
+        alternative_user_dict = self.aux_find_user_by_user_name(alternative_user_name)
+        alternative_user_auth = self.aux_get_user_authorization(alternative_user_name, alternative_user_name)
+        create_sprint_response = self.aux_create_sprint_for_user(alternative_sprint_name, alternative_user_dict["id"],
+                                                                 alternative_user_auth)
+        self.assertIn(create_sprint_response.status_code, [201, 400])
+
+        # creating task for admin user
+        alternative_task_name = 'alternative_user_task'
+        create_task_response = self.aux_create_task_for_user(alternative_task_name, alternative_user_dict["id"],
+                                                             alternative_user_auth)
+        self.assertIn(create_task_response.status_code, [201, 400])
+
+        # changing impediment from default user to alternative user
+        impediment_dict = self.aux_find_impediment_by_name(impediment_name)
+        alternative_task_dict = self.aux_find_task_by_name(alternative_task_name)
+        alternative_sprint_dict = self.aux_find_sprint_by_name(alternative_sprint_name)
+
+        updated_impediment = self.aux_alter_impediment_task(impediment_dict, alternative_task_dict)
+        updated_impediment = self.aux_alter_impediment_sprint(updated_impediment, alternative_sprint_dict)
+
+        response = requests.put(self.url_impediment_list + str(impediment_dict["id"]), json.dumps(updated_impediment),
+                                headers={"Authorization": default_user_auth})
+        self.assertEquals(response.status_code, 401)
+
+    def test_set_impediment_from_default_user_to_admin_with_admin_user_token(self):
+        # creating default user
+        default_user_name = "default_user_to_test_impediment"
+        create_user_response = self.aux_create_user(default_user_name, default_user_name)
+        self.assertIn(create_user_response.status_code, [201, 400])
+
+        # creating sprint for default user
+        default_sprint_name = "default_user_sprint"
+        default_user_dict = self.aux_find_user_by_user_name(default_user_name)
+        default_user_auth = self.aux_get_user_authorization(default_user_name, default_user_name)
+        create_sprint_response = self.aux_create_sprint_for_user(default_sprint_name, default_user_dict["id"],
+                                                                 default_user_auth)
+        self.assertIn(create_sprint_response.status_code, [201, 400])
+
+        # creating task for default user
+        default_task_name = 'default_user_task'
+        create_task_response = self.aux_create_task_for_user(default_task_name, default_user_dict["id"],
+                                                             default_user_auth)
+        self.assertIn(create_task_response.status_code, [201, 400])
+
+        impediment_name = "default_user_impediment"
+        default_task_dict = self.aux_find_task_by_name(default_task_name)
+        default_sprint_dict = self.aux_find_sprint_by_name(default_sprint_name)
+        create_impediment_response = self.aux_create_impediment_for_user(impediment_name, default_task_dict["id"],
+                                                                         default_sprint_dict["id_sprint"], default_user_auth)
+        self.assertIn(create_impediment_response.status_code, [201, 400])
+
+        # creating admin user
+        admin_user_name = "admin_user_to_alter_task"
+        create_admin_response = self.aux_create_user(admin_user_name, admin_user_name, is_admin=True)
+        self.assertIn(create_admin_response.status_code, [201, 400])
+
+        # creating sprint for admin user
+        admin_sprint_name = "admin_user_sprint"
+        admin_user_dict = self.aux_find_user_by_user_name(admin_user_name)
+        admin_user_auth = self.aux_get_user_authorization(admin_user_name, admin_user_name)
+        create_sprint_response = self.aux_create_sprint_for_user(admin_sprint_name, admin_user_dict["id"],
+                                                                 admin_user_auth)
+        self.assertIn(create_sprint_response.status_code, [201, 400])
+
+        # creating task for admin user
+        admin_task_name = 'admin_user_task'
+        create_task_response = self.aux_create_task_for_user(admin_task_name, admin_user_dict["id"],
+                                                             admin_user_auth)
+        self.assertIn(create_task_response.status_code, [201, 400])
+
+        # changing impediment from default user to admin user
+        impediment_dict = self.aux_find_impediment_by_name(impediment_name)
+        admin_task_dict = self.aux_find_task_by_name(admin_task_name)
+        admin_sprint_dict = self.aux_find_sprint_by_name(admin_sprint_name)
+
+        updated_impediment = self.aux_alter_impediment_task(impediment_dict, admin_task_dict)
+        updated_impediment = self.aux_alter_impediment_sprint(updated_impediment, admin_sprint_dict)
+
+        response = requests.put(self.url_impediment_list + str(impediment_dict["id"]), json.dumps(updated_impediment),
+                                headers={"Authorization": admin_user_auth})
+        self.assertEquals(response.status_code, 204)
+
+        # restoring impediment
+        impediment_dict = self.aux_find_impediment_by_name(impediment_name)
+        old_task_dict = self.aux_find_task_by_name(default_task_name)
+        old_sprint_dict = self.aux_find_sprint_by_name(default_sprint_name)
+
+        restored_impediment = self.aux_alter_impediment_task(impediment_dict, old_task_dict)
+        restored_impediment = self.aux_alter_impediment_sprint(restored_impediment, old_sprint_dict)
+
+        response = requests.put(self.url_impediment_list + str(impediment_dict["id"]), json.dumps(restored_impediment),
+                                headers={"Authorization": admin_user_auth})
+        self.assertEquals(response.status_code, 204)
+
+
+    def test_set_impediment_from_admin_user_to_default_user_without_token(self):
+        # creating admin user
+        admin_user_name = "admin_user_to_alter_task"
+        create_admin_response = self.aux_create_user(admin_user_name, admin_user_name, is_admin=True)
+        self.assertIn(create_admin_response.status_code, [201, 400])
+
+        # creating sprint for admin user
+        admin_sprint_name = "admin_user_sprint"
+        admin_user_dict = self.aux_find_user_by_user_name(admin_user_name)
+        admin_user_auth = self.aux_get_user_authorization(admin_user_name, admin_user_name)
+        create_sprint_response = self.aux_create_sprint_for_user(admin_sprint_name, admin_user_dict["id"],
+                                                                 admin_user_auth)
+        self.assertIn(create_sprint_response.status_code, [201, 400])
+
+        # creating task for admin user
+        admin_task_name = 'admin_user_task'
+        create_task_response = self.aux_create_task_for_user(admin_task_name, admin_user_dict["id"],
+                                                             admin_user_auth)
+        self.assertIn(create_task_response.status_code, [201, 400])
+
+        # creating impediment for admin user
+        impediment_name = "admin_user_impediment"
+        admin_task_dict = self.aux_find_task_by_name(admin_task_name)
+        admin_sprint_dict = self.aux_find_sprint_by_name(admin_sprint_name)
+        create_impediment_response = self.aux_create_impediment_for_user(impediment_name, admin_task_dict["id"],
+                                                                         admin_sprint_dict["id_sprint"], admin_user_auth)
+        self.assertIn(create_impediment_response.status_code, [201, 400])
+
+        # creating default user
+        default_user_name = "default_user_to_test_impediment"
+        create_user_response = self.aux_create_user(default_user_name, default_user_name)
+        self.assertIn(create_user_response.status_code, [201, 400])
+
+        # creating sprint for default user
+        default_sprint_name = "default_user_sprint"
+        default_user_dict = self.aux_find_user_by_user_name(default_user_name)
+        default_user_auth = self.aux_get_user_authorization(default_user_name, default_user_name)
+        create_sprint_response = self.aux_create_sprint_for_user(default_sprint_name, default_user_dict["id"],
+                                                                 default_user_auth)
+        self.assertIn(create_sprint_response.status_code, [201, 400])
+
+        # creating task for default user
+        default_task_name = 'default_user_task'
+        create_task_response = self.aux_create_task_for_user(default_task_name, default_user_dict["id"],
+                                                             default_user_auth)
+        self.assertIn(create_task_response.status_code, [201, 400])
+
+        # changing impediment from admin user to default user
+        impediment_dict = self.aux_find_impediment_by_name(impediment_name)
+        default_task_dict = self.aux_find_task_by_name(default_task_name)
+        default_sprint_dict = self.aux_find_sprint_by_name(default_sprint_name)
+
+        updated_impediment = self.aux_alter_impediment_task(impediment_dict, default_task_dict)
+        updated_impediment = self.aux_alter_impediment_sprint(updated_impediment, default_sprint_dict)
+
+        response = requests.put(self.url_impediment_list + str(impediment_dict["id"]), json.dumps(updated_impediment))
+        self.assertEquals(response.status_code, 401)
+
+    def test_set_impediment_from_admin_user_to_default_user_with_invalid_token(self):
+        # creating admin user
+        admin_user_name = "admin_user_to_alter_task"
+        create_admin_response = self.aux_create_user(admin_user_name, admin_user_name, is_admin=True)
+        self.assertIn(create_admin_response.status_code, [201, 400])
+
+        # creating sprint for admin user
+        admin_sprint_name = "admin_user_sprint"
+        admin_user_dict = self.aux_find_user_by_user_name(admin_user_name)
+        admin_user_auth = self.aux_get_user_authorization(admin_user_name, admin_user_name)
+        create_sprint_response = self.aux_create_sprint_for_user(admin_sprint_name, admin_user_dict["id"],
+                                                                 admin_user_auth)
+        self.assertIn(create_sprint_response.status_code, [201, 400])
+
+        # creating task for admin user
+        admin_task_name = 'admin_user_task'
+        create_task_response = self.aux_create_task_for_user(admin_task_name, admin_user_dict["id"],
+                                                             admin_user_auth)
+        self.assertIn(create_task_response.status_code, [201, 400])
+
+        # creating impediment for admin user
+        impediment_name = "admin_user_impediment"
+        admin_task_dict = self.aux_find_task_by_name(admin_task_name)
+        admin_sprint_dict = self.aux_find_sprint_by_name(admin_sprint_name)
+        create_impediment_response = self.aux_create_impediment_for_user(impediment_name, admin_task_dict["id"],
+                                                                         admin_sprint_dict["id_sprint"], admin_user_auth)
+        self.assertIn(create_impediment_response.status_code, [201, 400])
+
+        # creating default user
+        default_user_name = "default_user_to_test_impediment"
+        create_user_response = self.aux_create_user(default_user_name, default_user_name)
+        self.assertIn(create_user_response.status_code, [201, 400])
+
+        # creating sprint for default user
+        default_sprint_name = "default_user_sprint"
+        default_user_dict = self.aux_find_user_by_user_name(default_user_name)
+        default_user_auth = self.aux_get_user_authorization(default_user_name, default_user_name)
+        create_sprint_response = self.aux_create_sprint_for_user(default_sprint_name, default_user_dict["id"],
+                                                                 default_user_auth)
+        self.assertIn(create_sprint_response.status_code, [201, 400])
+
+        # creating task for default user
+        default_task_name = 'default_user_task'
+        create_task_response = self.aux_create_task_for_user(default_task_name, default_user_dict["id"],
+                                                             default_user_auth)
+        self.assertIn(create_task_response.status_code, [201, 400])
+
+        # changing impediment from admin user to default user
+        impediment_dict = self.aux_find_impediment_by_name(impediment_name)
+        default_task_dict = self.aux_find_task_by_name(default_task_name)
+        default_sprint_dict = self.aux_find_sprint_by_name(default_sprint_name)
+
+        updated_impediment = self.aux_alter_impediment_task(impediment_dict, default_task_dict)
+        updated_impediment = self.aux_alter_impediment_sprint(updated_impediment, default_sprint_dict)
+
+        response = requests.put(self.url_impediment_list + str(impediment_dict["id"]), json.dumps(updated_impediment), headers={"Authorization": INVALID_AUTH})
+        self.assertEquals(response.status_code, 401)
+
+    def test_set_impediment_from_admin_user_to_default_user_with_default_user_token(self):
+        # creating admin user
+        admin_user_name = "admin_user_to_alter_task"
+        create_admin_response = self.aux_create_user(admin_user_name, admin_user_name, is_admin=True)
+        self.assertIn(create_admin_response.status_code, [201, 400])
+
+        # creating sprint for admin user
+        admin_sprint_name = "admin_user_sprint"
+        admin_user_dict = self.aux_find_user_by_user_name(admin_user_name)
+        admin_user_auth = self.aux_get_user_authorization(admin_user_name, admin_user_name)
+        create_sprint_response = self.aux_create_sprint_for_user(admin_sprint_name, admin_user_dict["id"],
+                                                                 admin_user_auth)
+        self.assertIn(create_sprint_response.status_code, [201, 400])
+
+        # creating task for admin user
+        admin_task_name = 'admin_user_task'
+        create_task_response = self.aux_create_task_for_user(admin_task_name, admin_user_dict["id"],
+                                                             admin_user_auth)
+        self.assertIn(create_task_response.status_code, [201, 400])
+
+        # creating impediment for admin user
+        impediment_name = "admin_user_impediment"
+        admin_task_dict = self.aux_find_task_by_name(admin_task_name)
+        admin_sprint_dict = self.aux_find_sprint_by_name(admin_sprint_name)
+        create_impediment_response = self.aux_create_impediment_for_user(impediment_name, admin_task_dict["id"],
+                                                                         admin_sprint_dict["id_sprint"], admin_user_auth)
+        self.assertIn(create_impediment_response.status_code, [201, 400])
+
+        # creating default user
+        default_user_name = "default_user_to_test_impediment"
+        create_user_response = self.aux_create_user(default_user_name, default_user_name)
+        self.assertIn(create_user_response.status_code, [201, 400])
+
+        # creating sprint for default user
+        default_sprint_name = "default_user_sprint"
+        default_user_dict = self.aux_find_user_by_user_name(default_user_name)
+        default_user_auth = self.aux_get_user_authorization(default_user_name, default_user_name)
+        create_sprint_response = self.aux_create_sprint_for_user(default_sprint_name, default_user_dict["id"],
+                                                                 default_user_auth)
+        self.assertIn(create_sprint_response.status_code, [201, 400])
+
+        # creating task for default user
+        default_task_name = 'default_user_task'
+        create_task_response = self.aux_create_task_for_user(default_task_name, default_user_dict["id"],
+                                                             default_user_auth)
+        self.assertIn(create_task_response.status_code, [201, 400])
+
+        # changing impediment from admin user to default user
+        impediment_dict = self.aux_find_impediment_by_name(impediment_name)
+        default_task_dict = self.aux_find_task_by_name(default_task_name)
+        default_sprint_dict = self.aux_find_sprint_by_name(default_sprint_name)
+
+        updated_impediment = self.aux_alter_impediment_task(impediment_dict, default_task_dict)
+        updated_impediment = self.aux_alter_impediment_sprint(updated_impediment, default_sprint_dict)
+
+        response = requests.put(self.url_impediment_list + str(impediment_dict["id"]), json.dumps(updated_impediment),
+                                headers={"Authorization": default_user_auth})
+        self.assertEquals(response.status_code, 401)
+
+    def test_set_impediment_from_admin_user_to_another_admin_user_with_admin_user_token(self):
+        # creating admin user
+        admin_user_name = "admin_user_to_alter_task"
+        create_admin_response = self.aux_create_user(admin_user_name, admin_user_name, is_admin=True)
+        self.assertIn(create_admin_response.status_code, [201, 400])
+
+        # creating sprint for admin user
+        admin_sprint_name = "admin_user_sprint"
+        admin_user_dict = self.aux_find_user_by_user_name(admin_user_name)
+        admin_user_auth = self.aux_get_user_authorization(admin_user_name, admin_user_name)
+        create_sprint_response = self.aux_create_sprint_for_user(admin_sprint_name, admin_user_dict["id"],
+                                                                 admin_user_auth)
+        self.assertIn(create_sprint_response.status_code, [201, 400])
+
+        # creating task for admin user
+        admin_task_name = 'admin_user_task'
+        create_task_response = self.aux_create_task_for_user(admin_task_name, admin_user_dict["id"],
+                                                             admin_user_auth)
+        self.assertIn(create_task_response.status_code, [201, 400])
+
+        # creating impediment for admin user
+        impediment_name = "admin_user_impediment"
+        admin_task_dict = self.aux_find_task_by_name(admin_task_name)
+        admin_sprint_dict = self.aux_find_sprint_by_name(admin_sprint_name)
+        create_impediment_response = self.aux_create_impediment_for_user(impediment_name, admin_task_dict["id"],
+                                                                         admin_sprint_dict["id_sprint"], admin_user_auth)
+        self.assertIn(create_impediment_response.status_code, [201, 400])
+
+        # creating alternative admin
+        alternative_admin_user_name = "alternative_admin_to_test_impediment"
+        create_user_response = self.aux_create_user(alternative_admin_user_name, alternative_admin_user_name, is_admin=True)
+        self.assertIn(create_user_response.status_code, [201, 400])
+
+        # creating sprint for alternative admin
+        alternative_admin_sprint_name = "default_user_sprint"
+        alternative_admin_user_dict = self.aux_find_user_by_user_name(alternative_admin_user_name)
+        alternative_admin_auth = self.aux_get_user_authorization(alternative_admin_user_name, alternative_admin_user_name)
+        create_sprint_response = self.aux_create_sprint_for_user(alternative_admin_sprint_name, alternative_admin_user_dict["id"],
+                                                                 alternative_admin_auth)
+        self.assertIn(create_sprint_response.status_code, [201, 400])
+
+        # creating task for alternative admin
+        alternative_admin_task_name = 'alternative_admin_user_task'
+        create_task_response = self.aux_create_task_for_user(alternative_admin_task_name, alternative_admin_user_dict["id"],
+                                                             alternative_admin_auth)
+        self.assertIn(create_task_response.status_code, [201, 400])
+
+        # changing impediment from admin user to alternative admin user
+        impediment_dict = self.aux_find_impediment_by_name(impediment_name)
+        alternative_admin_task_dict = self.aux_find_task_by_name(alternative_admin_task_name)
+        alternative_admin_sprint_dict = self.aux_find_sprint_by_name(alternative_admin_sprint_name)
+
+        updated_impediment = self.aux_alter_impediment_task(impediment_dict, alternative_admin_task_dict)
+        updated_impediment = self.aux_alter_impediment_sprint(updated_impediment, alternative_admin_sprint_dict)
+
+        response = requests.put(self.url_impediment_list + str(impediment_dict["id"]), json.dumps(updated_impediment),
+                                headers={"Authorization": admin_user_auth})
+        self.assertEquals(response.status_code, 401)
+
+
+    # default user impediment is a impediment binded to a default user task and a default user sprint
+    def test_delete_default_user_impediment_without_token(self):
+        # creating default user
+        default_user_name = "default_user_to_test_impediment"
+        create_user_response = self.aux_create_user(default_user_name, default_user_name)
+        self.assertIn(create_user_response.status_code, [201, 400])
+
+        # creating sprint for default user
+        default_sprint_name = "default_user_sprint"
+        default_user_dict = self.aux_find_user_by_user_name(default_user_name)
+        default_user_auth = self.aux_get_user_authorization(default_user_name, default_user_name)
+        create_sprint_response = self.aux_create_sprint_for_user(default_sprint_name, default_user_dict["id"], default_user_auth)
+        self.assertIn(create_sprint_response.status_code, [201, 400])
+
+        # creating task for default user
+        default_task_name = 'default_user_task'
+        create_task_response = self.aux_create_task_for_user(default_task_name, default_user_dict["id"], default_user_auth)
+        self.assertIn(create_task_response.status_code, [201, 400])
+
+        impediment_name = "default_user_impediment"
+        default_task_dict = self.aux_find_task_by_name(default_task_name)
+        default_sprint_dict = self.aux_find_sprint_by_name(default_sprint_name)
+        create_impediment_response = self.aux_create_impediment_for_user(impediment_name, default_task_dict["id"], default_sprint_dict["id_sprint"], default_user_auth)
+        self.assertIn(create_impediment_response.status_code, [201, 400])
+
+        impediment_dict = self.aux_find_impediment_by_name(impediment_name)
+        response = requests.delete(self.url_impediment_list + str(impediment_dict["id"]))
+        self.assertEquals(response.status_code, 401)
+
+    def test_delete_default_user_impediment_with_invalid_token(self):
+        # creating default user
+        default_user_name = "default_user_to_test_impediment"
+        create_user_response = self.aux_create_user(default_user_name, default_user_name)
+        self.assertIn(create_user_response.status_code, [201, 400])
+
+        # creating sprint for default user
+        default_sprint_name = "default_user_sprint"
+        default_user_dict = self.aux_find_user_by_user_name(default_user_name)
+        default_user_auth = self.aux_get_user_authorization(default_user_name, default_user_name)
+        create_sprint_response = self.aux_create_sprint_for_user(default_sprint_name, default_user_dict["id"],
+                                                                 default_user_auth)
+        self.assertIn(create_sprint_response.status_code, [201, 400])
+
+        # creating task for default user
+        default_task_name = 'default_user_task'
+        create_task_response = self.aux_create_task_for_user(default_task_name, default_user_dict["id"],
+                                                             default_user_auth)
+        self.assertIn(create_task_response.status_code, [201, 400])
+
+        impediment_name = "default_user_impediment"
+        default_task_dict = self.aux_find_task_by_name(default_task_name)
+        default_sprint_dict = self.aux_find_sprint_by_name(default_sprint_name)
+        create_impediment_response = self.aux_create_impediment_for_user(impediment_name, default_task_dict["id"],
+                                                                         default_sprint_dict["id_sprint"], default_user_auth)
+        self.assertIn(create_impediment_response.status_code, [201, 400])
+
+        impediment_dict = self.aux_find_impediment_by_name(impediment_name)
+        response = requests.delete(self.url_impediment_list + str(impediment_dict["id"]), headers={"Authorization": INVALID_AUTH})
+        self.assertEquals(response.status_code, 401)
+
+    def test_delete_default_user_impediment_with_default_user_token_self_impediment(self):
+        # creating default user
+        default_user_name = "default_user_to_test_impediment"
+        create_user_response = self.aux_create_user(default_user_name, default_user_name)
+        self.assertIn(create_user_response.status_code, [201, 400])
+
+        # creating sprint for default user
+        default_sprint_name = "default_user_sprint"
+        default_user_dict = self.aux_find_user_by_user_name(default_user_name)
+        default_user_auth = self.aux_get_user_authorization(default_user_name, default_user_name)
+        create_sprint_response = self.aux_create_sprint_for_user(default_sprint_name, default_user_dict["id"],
+                                                                 default_user_auth)
+        self.assertIn(create_sprint_response.status_code, [201, 400])
+
+        # creating task for default user
+        default_task_name = 'default_user_task'
+        create_task_response = self.aux_create_task_for_user(default_task_name, default_user_dict["id"],
+                                                             default_user_auth)
+        self.assertIn(create_task_response.status_code, [201, 400])
+
+        impediment_name = "default_user_impediment"
+        default_task_dict = self.aux_find_task_by_name(default_task_name)
+        default_sprint_dict = self.aux_find_sprint_by_name(default_sprint_name)
+        create_impediment_response = self.aux_create_impediment_for_user(impediment_name, default_task_dict["id"],
+                                                                         default_sprint_dict["id_sprint"], default_user_auth)
+        self.assertIn(create_impediment_response.status_code, [201, 400])
+
+        impediment_dict = self.aux_find_impediment_by_name(impediment_name)
+        response = requests.delete(self.url_impediment_list + str(impediment_dict["id"]),
+                                   headers={"Authorization": default_user_auth})
+        self.assertEquals(response.status_code, 204)
+
+    def test_delete_default_user_impediment_with_default_user_token_another_user_impediment(self):
+        """
+        Alternative dafault user trying to delete dafault user impediment
+        """
+        # creating default user
+        default_user_name = "default_user_to_test_impediment"
+        create_user_response = self.aux_create_user(default_user_name, default_user_name)
+        self.assertIn(create_user_response.status_code, [201, 400])
+
+        # creating sprint for default user
+        default_sprint_name = "default_user_sprint"
+        default_user_dict = self.aux_find_user_by_user_name(default_user_name)
+        default_user_auth = self.aux_get_user_authorization(default_user_name, default_user_name)
+        create_sprint_response = self.aux_create_sprint_for_user(default_sprint_name, default_user_dict["id"],
+                                                                 default_user_auth)
+        self.assertIn(create_sprint_response.status_code, [201, 400])
+
+        # creating task for default user
+        default_task_name = 'default_user_task'
+        create_task_response = self.aux_create_task_for_user(default_task_name, default_user_dict["id"],
+                                                             default_user_auth)
+        self.assertIn(create_task_response.status_code, [201, 400])
+
+        impediment_name = "default_user_impediment"
+        default_task_dict = self.aux_find_task_by_name(default_task_name)
+        default_sprint_dict = self.aux_find_sprint_by_name(default_sprint_name)
+        create_impediment_response = self.aux_create_impediment_for_user(impediment_name, default_task_dict["id"],
+                                                                         default_sprint_dict["id_sprint"], default_user_auth)
+        self.assertIn(create_impediment_response.status_code, [201, 400])
+
+        # creating alternative user
+        alternative_user_name = "alternative_user_to_test_impediment"
+        create_alternative_user_response = self.aux_create_user(alternative_user_name, alternative_user_name)
+        self.assertIn(create_alternative_user_response.status_code, [201, 400])
+
+        alternative_user_auth = self.aux_get_user_authorization(alternative_user_name, alternative_user_name)
+        impediment_dict = self.aux_find_impediment_by_name(impediment_name)
+        response = requests.delete(self.url_impediment_list + str(impediment_dict["id"]),
+                                   headers={"Authorization": alternative_user_auth})
+        self.assertEquals(response.status_code, 401)
+
+    def test_delete_default_user_impediment_with_admin_user_token(self):
+        """
+        Admin dafault user trying to delete dafault user task
+        """
+        # creating default user
+        default_user_name = "default_user_to_test_impediment"
+        create_user_response = self.aux_create_user(default_user_name, default_user_name)
+        self.assertIn(create_user_response.status_code, [201, 400])
+
+        # creating sprint for default user
+        default_sprint_name = "default_user_sprint"
+        default_user_dict = self.aux_find_user_by_user_name(default_user_name)
+        default_user_auth = self.aux_get_user_authorization(default_user_name, default_user_name)
+        create_sprint_response = self.aux_create_sprint_for_user(default_sprint_name, default_user_dict["id"],
+                                                                 default_user_auth)
+        self.assertIn(create_sprint_response.status_code, [201, 400])
+
+        # creating task for default user
+        default_task_name = 'default_user_task'
+        create_task_response = self.aux_create_task_for_user(default_task_name, default_user_dict["id"],
+                                                             default_user_auth)
+        self.assertIn(create_task_response.status_code, [201, 400])
+
+        impediment_name = "default_user_impediment"
+        default_task_dict = self.aux_find_task_by_name(default_task_name)
+        default_sprint_dict = self.aux_find_sprint_by_name(default_sprint_name)
+        create_impediment_response = self.aux_create_impediment_for_user(impediment_name, default_task_dict["id"],
+                                                                         default_sprint_dict["id_sprint"], default_user_auth)
+        self.assertIn(create_impediment_response.status_code, [201, 400])
+
+        # creating alternative user
+        admin_user_name = "admin_user_to_test_impediment"
+        create_admin_user_response = self.aux_create_user(admin_user_name, admin_user_name, is_admin=True)
+        self.assertIn(create_admin_user_response.status_code, [201, 400])
+
+        admin_user_auth = self.aux_get_user_authorization(admin_user_name, admin_user_name)
+        impediment_dict = self.aux_find_impediment_by_name(impediment_name)
+        response = requests.delete(self.url_impediment_list + str(impediment_dict["id"]),
+                                   headers={"Authorization": admin_user_auth})
+        self.assertEquals(response.status_code, 204)
+
+
+    def test_delete_admin_user_impediment_without_token(self):
+        # creating admin user
+        admin_user_name = "admin_user_to_test_impediment"
+        create_admin_user_response = self.aux_create_user(admin_user_name, admin_user_name, is_admin=True)
+        self.assertIn(create_admin_user_response.status_code, [201, 400])
+
+        # creating sprint for admin user
+        admin_sprint_name = "admin_user_sprint"
+        admin_user_dict = self.aux_find_user_by_user_name(admin_user_name)
+        admin_user_auth = self.aux_get_user_authorization(admin_user_name, admin_user_name)
+        create_sprint_response = self.aux_create_sprint_for_user(admin_sprint_name, admin_user_dict["id"],
+                                                                 admin_user_auth)
+        self.assertIn(create_sprint_response.status_code, [201, 400])
+
+        # creating task for admin user
+        admin_task_name = 'admin_user_task'
+        create_task_response = self.aux_create_task_for_user(admin_task_name, admin_user_dict["id"],
+                                                             admin_user_auth)
+        self.assertIn(create_task_response.status_code, [201, 400])
+
+        impediment_name = "admin_user_impediment"
+        admin_task_dict = self.aux_find_task_by_name(admin_task_name)
+        admin_sprint_dict = self.aux_find_sprint_by_name(admin_sprint_name)
+        create_impediment_response = self.aux_create_impediment_for_user(impediment_name, admin_task_dict["id"],
+                                                                         admin_sprint_dict["id_sprint"], admin_user_auth)
+        self.assertIn(create_impediment_response.status_code, [201, 400])
+
+        impediment_dict = self.aux_find_impediment_by_name(impediment_name)
+        response = requests.delete(self.url_impediment_list + str(impediment_dict["id"]))
+        self.assertEquals(response.status_code, 401)
+
+    def test_delete_admin_user_sprint_with_invalid_token(self):
+        ## creating admin user
+        admin_user_name = "admin_user_to_test_impediment"
+        create_admin_user_response = self.aux_create_user(admin_user_name, admin_user_name, is_admin=True)
+        self.assertIn(create_admin_user_response.status_code, [201, 400])
+
+        # creating sprint for admin user
+        admin_sprint_name = "admin_user_sprint"
+        admin_user_dict = self.aux_find_user_by_user_name(admin_user_name)
+        admin_user_auth = self.aux_get_user_authorization(admin_user_name, admin_user_name)
+        create_sprint_response = self.aux_create_sprint_for_user(admin_sprint_name, admin_user_dict["id"],
+                                                                 admin_user_auth)
+        self.assertIn(create_sprint_response.status_code, [201, 400])
+
+        # creating task for admin user
+        admin_task_name = 'admin_user_task'
+        create_task_response = self.aux_create_task_for_user(admin_task_name, admin_user_dict["id"],
+                                                             admin_user_auth)
+        self.assertIn(create_task_response.status_code, [201, 400])
+
+        impediment_name = "admin_user_impediment"
+        admin_task_dict = self.aux_find_task_by_name(admin_task_name)
+        admin_sprint_dict = self.aux_find_sprint_by_name(admin_sprint_name)
+        create_impediment_response = self.aux_create_impediment_for_user(impediment_name, admin_task_dict["id"],
+                                                                         admin_sprint_dict["id_sprint"], admin_user_auth)
+        self.assertIn(create_impediment_response.status_code, [201, 400])
+
+        impediment_dict = self.aux_find_impediment_by_name(impediment_name)
+        response = requests.delete(self.url_impediment_list + str(impediment_dict["id"]), headers={"Authorization": INVALID_AUTH})
+        self.assertEquals(response.status_code, 401)
+
+    def test_delete_admin_user_impediment_with_default_user_token(self):
+        """
+        Default user trying to delete admin task
+        """
+        ## creating admin user
+        admin_user_name = "admin_user_to_test_impediment"
+        create_admin_user_response = self.aux_create_user(admin_user_name, admin_user_name, is_admin=True)
+        self.assertIn(create_admin_user_response.status_code, [201, 400])
+
+        # creating sprint for admin user
+        admin_sprint_name = "admin_user_sprint"
+        admin_user_dict = self.aux_find_user_by_user_name(admin_user_name)
+        admin_user_auth = self.aux_get_user_authorization(admin_user_name, admin_user_name)
+        create_sprint_response = self.aux_create_sprint_for_user(admin_sprint_name, admin_user_dict["id"],
+                                                                 admin_user_auth)
+        self.assertIn(create_sprint_response.status_code, [201, 400])
+
+        # creating task for admin user
+        admin_task_name = 'admin_user_task'
+        create_task_response = self.aux_create_task_for_user(admin_task_name, admin_user_dict["id"],
+                                                             admin_user_auth)
+        self.assertIn(create_task_response.status_code, [201, 400])
+
+        impediment_name = "admin_user_impediment"
+        admin_task_dict = self.aux_find_task_by_name(admin_task_name)
+        admin_sprint_dict = self.aux_find_sprint_by_name(admin_sprint_name)
+        create_impediment_response = self.aux_create_impediment_for_user(impediment_name, admin_task_dict["id"],
+                                                                         admin_sprint_dict["id_sprint"], admin_user_auth)
+        self.assertIn(create_impediment_response.status_code, [201, 400])
+
+        ## creating default user
+        default_user_name = "default_user_to_test_impediment"
+        create_default_user_response = self.aux_create_user(default_user_name, default_user_name)
+        self.assertIn(create_default_user_response.status_code, [201, 400])
+        default_user_auth = self.aux_get_user_authorization(default_user_name, default_user_name)
+
+        impediment_dict = self.aux_find_impediment_by_name(impediment_name)
+        response = requests.delete(self.url_impediment_list + str(impediment_dict["id"]),
+                                   headers={"Authorization": default_user_auth})
+        self.assertEquals(response.status_code, 401)
+
+    def test_delete_admin_user_impediment_with_admin_user_token_self_impediment(self):
+        # creating admin user
+        admin_user_name = "admin_user_to_test_impediment"
+        create_admin_user_response = self.aux_create_user(admin_user_name, admin_user_name, is_admin=True)
+        self.assertIn(create_admin_user_response.status_code, [201, 400])
+
+        # creating sprint for admin user
+        admin_sprint_name = "admin_user_sprint"
+        admin_user_dict = self.aux_find_user_by_user_name(admin_user_name)
+        admin_user_auth = self.aux_get_user_authorization(admin_user_name, admin_user_name)
+        create_sprint_response = self.aux_create_sprint_for_user(admin_sprint_name, admin_user_dict["id"],
+                                                                 admin_user_auth)
+        self.assertIn(create_sprint_response.status_code, [201, 400])
+
+        # creating task for admin user
+        admin_task_name = 'admin_user_task'
+        create_task_response = self.aux_create_task_for_user(admin_task_name, admin_user_dict["id"],
+                                                             admin_user_auth)
+        self.assertIn(create_task_response.status_code, [201, 400])
+
+        impediment_name = "admin_user_impediment"
+        admin_task_dict = self.aux_find_task_by_name(admin_task_name)
+        admin_sprint_dict = self.aux_find_sprint_by_name(admin_sprint_name)
+        create_impediment_response = self.aux_create_impediment_for_user(impediment_name, admin_task_dict["id"],
+                                                                         admin_sprint_dict["id_sprint"], admin_user_auth)
+        self.assertIn(create_impediment_response.status_code, [201, 400])
+
+        impediment_dict = self.aux_find_impediment_by_name(impediment_name)
+        response = requests.delete(self.url_impediment_list + str(impediment_dict["id"]),
+                                   headers={"Authorization": admin_user_auth})
+        self.assertEquals(response.status_code, 204)
+
+    def test_delete_admin_user_impediment_with_admin_user_token_another_admin_impediment(self):
+        """
+        Alternative admin user trying to delete admin impediiment
+        """
+        # creating admin user
+        admin_user_name = "admin_user_to_test_impediment"
+        create_admin_user_response = self.aux_create_user(admin_user_name, admin_user_name, is_admin=True)
+        self.assertIn(create_admin_user_response.status_code, [201, 400])
+
+        # creating sprint for admin user
+        admin_sprint_name = "admin_user_sprint"
+        admin_user_dict = self.aux_find_user_by_user_name(admin_user_name)
+        admin_user_auth = self.aux_get_user_authorization(admin_user_name, admin_user_name)
+        create_sprint_response = self.aux_create_sprint_for_user(admin_sprint_name, admin_user_dict["id"],
+                                                                 admin_user_auth)
+        self.assertIn(create_sprint_response.status_code, [201, 400])
+
+        # creating task for admin user
+        admin_task_name = 'admin_user_task'
+        create_task_response = self.aux_create_task_for_user(admin_task_name, admin_user_dict["id"],
+                                                             admin_user_auth)
+        self.assertIn(create_task_response.status_code, [201, 400])
+
+        impediment_name = "admin_user_impediment"
+        admin_task_dict = self.aux_find_task_by_name(admin_task_name)
+        admin_sprint_dict = self.aux_find_sprint_by_name(admin_sprint_name)
+        create_impediment_response = self.aux_create_impediment_for_user(impediment_name, admin_task_dict["id"],
+                                                                         admin_sprint_dict["id_sprint"], admin_user_auth)
+        self.assertIn(create_impediment_response.status_code, [201, 400])
+
+        alternative_admin_name = "alternative_admin_user_to_test_impediment"
+        create_alternative_admin_user_response = self.aux_create_user(alternative_admin_name, alternative_admin_name, is_admin=True)
+        self.assertIn(create_alternative_admin_user_response.status_code, [201, 400])
+        alternative_admin_user_auth = self.aux_get_user_authorization(alternative_admin_name, alternative_admin_name)
+
+        impediment_dict = self.aux_find_impediment_by_name(impediment_name)
+        response = requests.delete(self.url_impediment_list + str(impediment_dict["id"]),
+                                   headers={"Authorization": alternative_admin_user_auth})
+        self.assertEquals(response.status_code, 401)

@@ -1,0 +1,434 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="69f9e621-b767-49b9-bc1e-83216a609bd7" name="Default Changelist" comment="Added more permission verification">
+      <change beforePath="$PROJECT_DIR$/.idea/kanban-backend.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/kanban-backend.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/db_test.sqlite3" beforeDir="false" afterPath="$PROJECT_DIR$/db_test.sqlite3" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scrum/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/scrum/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scrum/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/scrum/serializers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scrum/tests.py" beforeDir="false" afterPath="$PROJECT_DIR$/scrum/tests.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scrum/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/scrum/views.py" afterDir="false" />
+    </list>
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileEditorManager">
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/scrum/tests.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="204">
+              <caret line="2894" column="76" selection-start-line="2894" selection-start-column="76" selection-end-line="2894" selection-end-column="76" />
+              <folding>
+                <element signature="e#276#347#0" />
+                <element signature="e#91919#122439#0" />
+                <element signature="e#109316#110243#0" />
+                <element signature="e#110319#111352#0" />
+                <element signature="e#111445#112518#0" />
+                <element signature="e#112619#114240#0" />
+                <element signature="e#112619#112702#1" />
+                <element signature="e#114319#115842#0" />
+                <element signature="e#114319#114396#1" />
+                <element signature="e#115912#116887#0" />
+                <element signature="e#116961#117977#0" />
+                <element signature="e#118056#119532#0" />
+                <element signature="e#118056#118120#1" />
+                <element signature="e#119621#120640#0" />
+                <element signature="e#120738#122439#0" />
+                <element signature="e#120738#120812#1" />
+                <element signature="e#122609#122850#0" />
+                <element signature="e#122946#123253#0" />
+                <element signature="e#122953#123076#0" />
+                <element signature="e#123311#123479#0" />
+                <element signature="e#123579#123890#0" />
+                <element signature="e#123586#123711#0" />
+                <element signature="e#123952#124124#0" />
+                <element signature="e#124229#124601#0" />
+                <element signature="e#124236#124425#0" />
+                <element signature="e#124671#124851#0" />
+                <element signature="e#124930#125159#0" />
+                <element signature="e#125242#125492#0" />
+                <element signature="e#125498#125806#1" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/scrum/serializers.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-7">
+              <caret line="56" column="23" selection-start-line="56" selection-start-column="23" selection-end-line="56" selection-end-column="23" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/scrum/views.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="53">
+              <caret line="123" selection-start-line="123" selection-end-line="123" />
+              <folding>
+                <element signature="e#0#35#0" expanded="true" />
+                <element signature="e#1576#2530#0" />
+                <element signature="e#2738#3078#0" />
+                <element signature="e#3137#3431#0" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/scrum/models.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="221">
+              <caret line="270" column="30" selection-start-line="270" selection-start-column="30" selection-end-line="270" selection-end-column="30" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
+  </component>
+  <component name="FindInProjectRecents">
+    <findStrings>
+      <find>test_set_task_from_admin_user_to_another_admin_user_with_admin_user_token(</find>
+      <find>class TaskDetail</find>
+      <find>test_set_project_from_admin_to_default_user_with_default_user_token(</find>
+      <find>test_set_project_from_default_user_to_admin_user_with_admin_user_token</find>
+      <find>class P</find>
+      <find>test_set_project_from_default_user_to_admin_user_with_admin_user_token(</find>
+      <find>test_delete_default_user_project_with_admin_user_token</find>
+      <find>default_user_to_delete_project</find>
+      <find>class ProjectDeta</find>
+      <find>class Sprin</find>
+      <find>def post</find>
+      <find>class sprint</find>
+      <find>uri_task_list</find>
+      <find>class Impedimen</find>
+      <find>sprint_dict[&quot;id&quot;]</find>
+      <find>test_delete_admin_user_impediment_with_admin_user_token_self_impediment</find>
+      <find>assertEquals</find>
+      <find>test_delete_default_user_impediment_with_admin_user_token</find>
+      <find>class Imp</find>
+      <find>test_delete_admin_user_impediment_with_admin_user_token_another_admin_impediment</find>
+      <find>class Impe</find>
+      <find>task</find>
+      <find>test_delete_default_user_impediment_with_default_user_token_self_impediment</find>
+      <find>self.get_ob</find>
+      <find>class Task</find>
+    </findStrings>
+    <replaceStrings>
+      <replace>sprint_dict[&quot;id_sprint&quot;]</replace>
+    </replaceStrings>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="IdeDocumentHistory">
+    <option name="CHANGED_PATHS">
+      <list>
+        <option value="$PROJECT_DIR$/hyper_resource/resources/CollectionResource.py" />
+        <option value="$PROJECT_DIR$/scrum/serializers.py" />
+        <option value="$PROJECT_DIR$/scrum/tests.py" />
+        <option value="$PROJECT_DIR$/scrum/views.py" />
+        <option value="$PROJECT_DIR$/scrum/models.py" />
+      </list>
+    </option>
+  </component>
+  <component name="ProjectFrameBounds" extendedState="6">
+    <option name="x" value="716" />
+    <option name="y" value="25" />
+    <option name="width" value="650" />
+    <option name="height" value="743" />
+  </component>
+  <component name="ProjectView">
+    <navigator proportions="" version="1">
+      <foldersAlwaysOnTop value="true" />
+    </navigator>
+    <panes>
+      <pane id="ProjectPane">
+        <subPane>
+          <expand>
+            <path>
+              <item name="kanban-backend" type="b2602c69:ProjectViewProjectNode" />
+              <item name="kanban-backend" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="kanban-backend" type="b2602c69:ProjectViewProjectNode" />
+              <item name="kanban-backend" type="462c0819:PsiDirectoryNode" />
+              <item name="scrum" type="462c0819:PsiDirectoryNode" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
+      </pane>
+      <pane id="Scope" />
+    </panes>
+  </component>
+  <component name="PropertiesComponent">
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
+  </component>
+  <component name="RunDashboard">
+    <option name="ruleStates">
+      <list>
+        <RuleState>
+          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
+        </RuleState>
+        <RuleState>
+          <option name="name" value="StatusDashboardGroupingRule" />
+        </RuleState>
+      </list>
+    </option>
+  </component>
+  <component name="RunManager">
+    <configuration name="kanban-backend" type="PythonConfigurationType" factoryName="Python">
+      <module name="kanban-backend" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="$PROJECT_DIR$/../hyper_resource_env_py3/bin/python3" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="manage.py" />
+      <option name="PARAMETERS" value="runserver localhost:80" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="69f9e621-b767-49b9-bc1e-83216a609bd7" name="Default Changelist" comment="" />
+      <created>1555115706253</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1555115706253</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="ToolWindowManager">
+    <frame x="67" y="25" width="1299" height="743" extended-state="6" />
+    <layout>
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.1630094" />
+      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
+      <window_info id="Favorites" order="2" side_tool="true" />
+      <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="Find" order="1" weight="0.32899022" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.32899022" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.39739415" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="bottom" id="TODO" order="6" />
+      <window_info active="true" anchor="bottom" id="Version Control" order="7" visible="true" weight="0.32899022" />
+      <window_info anchor="bottom" id="Terminal" order="8" />
+      <window_info anchor="bottom" id="Event Log" order="9" side_tool="true" />
+      <window_info anchor="bottom" id="Python Console" order="10" />
+      <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+    </layout>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Added more permission verification" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added more permission verification" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/scrum/views.py</url>
+          <line>238</line>
+          <option name="timeStamp" value="5" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+  <component name="debuggerHistoryManager">
+    <expressions id="evaluateExpression">
+      <expression>
+        <expression-string>user</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>impediment.task.responsible_id</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>impediment.task</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>impediment</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>user.id</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>self.task.responsible_id</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>user.i</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>self.task</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>self.task.id</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+    </expressions>
+  </component>
+  <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/hyper_resource/resources/CollectionResource.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="28">
+          <caret line="4" column="37" lean-forward="true" selection-start-line="4" selection-start-column="37" selection-end-line="4" selection-end-column="37" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/hyper_resource/serializers.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="273">
+          <caret line="46" selection-start-line="46" selection-end-line="46" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../hyper_resource_env_py3/lib/python3.6/site-packages/rest_framework/serializers.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="183">
+          <caret line="218" selection-start-line="218" selection-end-line="218" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../hyper_resource_env_py3/lib/python3.6/site-packages/django/views/decorators/csrf.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="214">
+          <caret line="53" selection-start-line="53" selection-end-line="53" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/hyper_resource/resources/AbstractCollectionResource.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="126">
+          <caret line="835" selection-start-line="835" selection-end-line="835" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../hyper_resource_env_py3/lib/python3.6/site-packages/django/views/generic/base.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="113">
+          <caret line="68" selection-start-line="68" selection-end-line="68" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/hyper_resource/resources/AbstractResource.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="105">
+          <caret line="362" selection-start-line="362" selection-end-line="362" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../hyper_resource_env_py3/lib/python3.6/site-packages/rest_framework/views.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="113">
+          <caret line="479" selection-start-line="479" selection-end-line="479" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/scrum/tests.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="204">
+          <caret line="2894" column="76" selection-start-line="2894" selection-start-column="76" selection-end-line="2894" selection-end-column="76" />
+          <folding>
+            <element signature="e#276#347#0" />
+            <element signature="e#91919#122439#0" />
+            <element signature="e#109316#110243#0" />
+            <element signature="e#110319#111352#0" />
+            <element signature="e#111445#112518#0" />
+            <element signature="e#112619#114240#0" />
+            <element signature="e#112619#112702#1" />
+            <element signature="e#114319#115842#0" />
+            <element signature="e#114319#114396#1" />
+            <element signature="e#115912#116887#0" />
+            <element signature="e#116961#117977#0" />
+            <element signature="e#118056#119532#0" />
+            <element signature="e#118056#118120#1" />
+            <element signature="e#119621#120640#0" />
+            <element signature="e#120738#122439#0" />
+            <element signature="e#120738#120812#1" />
+            <element signature="e#122609#122850#0" />
+            <element signature="e#122946#123253#0" />
+            <element signature="e#122953#123076#0" />
+            <element signature="e#123311#123479#0" />
+            <element signature="e#123579#123890#0" />
+            <element signature="e#123586#123711#0" />
+            <element signature="e#123952#124124#0" />
+            <element signature="e#124229#124601#0" />
+            <element signature="e#124236#124425#0" />
+            <element signature="e#124671#124851#0" />
+            <element signature="e#124930#125159#0" />
+            <element signature="e#125242#125492#0" />
+            <element signature="e#125498#125806#1" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/scrum/serializers.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-7">
+          <caret line="56" column="23" selection-start-line="56" selection-start-column="23" selection-end-line="56" selection-end-column="23" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/scrum/models.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="221">
+          <caret line="270" column="30" selection-start-line="270" selection-start-column="30" selection-end-line="270" selection-end-column="30" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/scrum/views.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="53">
+          <caret line="123" selection-start-line="123" selection-end-line="123" />
+          <folding>
+            <element signature="e#0#35#0" expanded="true" />
+            <element signature="e#1576#2530#0" />
+            <element signature="e#2738#3078#0" />
+            <element signature="e#3137#3431#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+  </component>
+</project>

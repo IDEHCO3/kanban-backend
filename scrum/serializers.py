@@ -64,6 +64,7 @@ class ImpedimentSerializer(BusinessSerializer):
         for key, value in self.field_relationship_to_validate_dict().items():
              validated_data[key] = self.get_id_relationship_from_request(value)
 
+    '''
     def create_or_update(self, instance, validated_data):
         an_instance = instance
         self.transform_relationship_from_request(validated_data)
@@ -74,9 +75,12 @@ class ImpedimentSerializer(BusinessSerializer):
             an_instance = super(ImpedimentSerializer, self).update(instance, validated_data)
 
         return an_instance
+    '''
 
+    '''
     def create(self, validated_data):
         return self.create_or_update(None, validated_data)
+    '''
 
     def update(self, instance, validated_data):
         return self.create_or_update(instance, validated_data)

@@ -85,6 +85,17 @@ class ImpedimentList(CollectionResource):
     def token_is_need(self):
         return True
 
+    def token_has_permission(self, request, a_token):
+        is_safe_request_or_admin = super(ImpedimentList, self).token_has_permission(request, a_token)
+        if is_safe_request_or_admin:
+            return True
+
+        if request.method in ['POST']:
+            return True
+            #return user.is_task_owner(request.data)
+
+        return False
+
 
 class ImpedimentDetail(NonSpatialResource):
     serializer_class = ImpedimentSerializer
@@ -97,6 +108,26 @@ class ImpedimentDetail(NonSpatialResource):
     def token_is_need(self):
         return True
 
+    def token_has_permission(self, request, a_token):
+        is_safe_request_or_admin = super(ImpedimentDetail, self).token_has_permission(request, a_token)
+        if is_safe_request_or_admin:
+            return True
+
+        if request.method in ['DELETE']:
+            return True
+            #return user.is_task_owner(request.data)
+
+        return False
+
+    def delete(self, request, *args, **kwargs):
+        data = request.data
+        impediment = self.get_object(kwargs)
+        user = self.get_user_from_request(request)
+
+        if impediment.is_self_task_impediment(user):
+            return super(ImpedimentDetail, self).delete(request, *args, **kwargs)
+
+        return self.get_response_for_not_privileged_token()
 
 class ProjectList(CollectionResource):
     queryset = Project.objects.all()
@@ -144,6 +175,9 @@ class ProjectDetail(NonSpatialResource):
 
         return False
 
+    def get_project_by_id(self, id):
+        return Project.objects.get(pk=id)
+
     def is_setting_project_to_admin(self, data):
         if "administrative_responsible" not in data and "technical_responsible" not in data:
             return False
@@ -161,11 +195,37 @@ class ProjectDetail(NonSpatialResource):
 
         return False
 
+    def changing_project_responsible_for_another_admin(self, current_user, data):
+        if current_user.is_project_owner(data):
+            return False
+
+        administrative_responsible_changing_id = int(self.remove_last_slash(data["administrative_responsible"]).split("/")[-1])
+        changing_administrative_responsible = ScrumUser.objects.get(pk=administrative_responsible_changing_id)
+        if changing_administrative_responsible.is_admin():
+            return True
+
+        technical_responsible_changing_id = int(self.remove_last_slash(data["technical_responsible"]).split("/")[-1])
+        changing_technical_responsible = ScrumUser.objects.get(pk=technical_responsible_changing_id)
+
+        return changing_technical_responsible.is_admin()
+
+    def changing_project_responsable(self, data):
+        request_project_administrative_rasponsable_id = int(self.remove_last_slash(data["administrative_responsible"]).split("/")[-1])
+        project_from_db = self.get_project_by_id(data["id"])
+
+        if request_project_administrative_rasponsable_id == project_from_db.administrative_responsible.id:
+            return False
+
+        request_project_technical_responsible_id = int(self.remove_last_slash(data["technical_responsible"]).split("/")[-1])
+        return request_project_technical_responsible_id == project_from_db.technical_responsible.id
+
     def put(self, request, *args, **kwargs):
         project = self.get_object(kwargs)
         user = self.get_user_from_request(request)
 
         if user.is_admin():
+            if self.changing_project_responsible_for_another_admin(user, request.data):
+                return self.get_response_for_not_privileged_token()
             return super(ProjectDetail, self).put(request, *kwargs, **kwargs)
 
         if user.is_project_owner(project):
@@ -179,8 +239,15 @@ class ProjectDetail(NonSpatialResource):
         project = self.get_object(kwargs)
         user = self.get_user_from_request(request)
 
-        if user.is_admin() or user.is_project_owner(project):
+        if user.is_project_owner(project):
             return super(ProjectDetail, self).delete(request, *kwargs, **kwargs)
+
+        if project.is_admin_project():
+            return self.get_response_for_not_privileged_token()
+
+        if user.is_project_owner(project) or user.is_admin():
+            return super(ProjectDetail, self).delete(request, *kwargs, **kwargs)
+
         return self.get_response_for_not_privileged_token()
 
 class ScrumUserList(CollectionResource):
@@ -448,6 +515,15 @@ class TaskDetail(NonSpatialResource):
 
         return not request_task_rasponsable_id == task_from_db.responsible.id
 
+    def changing_for_another_admin(self, current_user, data):
+        if current_user.is_task_owner(data):
+            return False
+        task_responsible_changing_id = int(self.remove_last_slash(data["responsible"]).split("/")[-1])
+
+        changing_user = ScrumUser.objects.get(pk=task_responsible_changing_id)
+
+        return changing_user.is_admin()
+
     def put(self, request, *args, **kwargs):
         request_data = request.data
 
@@ -455,7 +531,7 @@ class TaskDetail(NonSpatialResource):
         payload = self.get_token_payload(a_token)
         user = ScrumUser.objects.filter(**payload).first()
 
-        if user.is_admin():
+        if user.is_admin() and not self.changing_for_another_admin(user, request_data):
             return super(TaskDetail, self).put(request, *args, **kwargs)
 
         if self.changing_responsable(request_data):
