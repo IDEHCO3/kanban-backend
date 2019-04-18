@@ -6,8 +6,8 @@ app_name="kanban"
 
 urlpatterns = (
 
-    url(r'^scrum-list/',include('scrum.urls',namespace='scrum')),
-    url(r'^$', views.index, name='kanban')
+    url(r'^kanban-ggt/scrum-list/',include('scrum.urls',namespace='scrum')),
+    url(r'^kanban-ggt/$', views.index, name='kanban')
 
 
 )

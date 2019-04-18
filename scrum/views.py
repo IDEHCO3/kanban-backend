@@ -44,9 +44,10 @@ class APIRoot(NonSpatialEntryPointResource):
         return ordered_dict_of_link
 
 def index(request):
-    #data = open("index.html", 'r').read()
+    data = open("./dist/index.html", 'r').read()
 
-    return HttpResponse(render(request, "scrum/index.html"), content_type="text/html")
+    #return HttpResponse(render(request, "scrum/index.html"), content_type="text/html")
+    return HttpResponse(data, content_type="text/html")
 
 class ContinuousActivityList(CollectionResource):
     queryset = ContinuousActivity.objects.all()
@@ -398,7 +399,7 @@ class ScrumUserLogin(CollectionResource):
 
     def get(self, request, *args, **kwargs):
         if format == 'jsonld':
-            return super(ScrumUserLogin, self).get(request, *args, *kwargs)
+            return super(ScrumUserLogin, self).get(request, *args, **kwargs)
 
         if request.build_absolute_uri().endswith('.jsonld'):
             kwargs = self.remove_suffix_from_kwargs(**kwargs)
